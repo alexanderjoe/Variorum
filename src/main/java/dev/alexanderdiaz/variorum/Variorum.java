@@ -49,16 +49,8 @@ public final class Variorum extends JavaPlugin {
         Events.register(new VariorumListener());
 
         getServer().getScheduler().runTaskLater(get(), () -> {
-            String mapName = "testworld"; // We can make this configurable later
-            getLogger().log(Level.INFO, "Loading map: " + mapName);
-            get().getMatchManager().loadMap(mapName);
-
-            // Get the current match and check modules
-            Match match = getMatchManager().getCurrentMatch();
-            if (match != null) {
-                match.start();
-            }
-        }, 40);
+            matchManager.cycleToNextMatch();
+        }, 20);
     }
 
     @Override

@@ -3,6 +3,9 @@ package dev.alexanderdiaz.variorum.match;
 import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.map.VariorumMapFactory;
+import dev.alexanderdiaz.variorum.map.rotation.DefaultRotationProvider;
+import dev.alexanderdiaz.variorum.map.rotation.Rotation;
+import dev.alexanderdiaz.variorum.map.rotation.RotationProvider;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -19,6 +22,8 @@ import java.util.logging.Level;
 public class MatchManager {
     private final Variorum plugin;
     private final MatchFactory matchFactory;
+    private final RotationProvider rotationProvider;
+
     @Getter
     private Match currentMatch;
     private static final String MATCHES_FOLDER = "matches";
@@ -27,12 +32,30 @@ public class MatchManager {
     public MatchManager(Variorum plugin) {
         this.plugin = plugin;
         this.matchFactory = new MatchFactory();
+        this.rotationProvider = new DefaultRotationProvider(matchFactory, plugin);
+    }
+
+    public void cycleToNextMatch() {
+        Match oldMatch = currentMatch;
+
+        // Get next map and load it
+        String nextMap = rotationProvider.provideRotation().getNextMap();
+        loadMap(nextMap);
+
+        // If we have a new match, move players before ending the old one
+        if (currentMatch != null && oldMatch != null) {
+            // Move all players from old match to new match
+            oldMatch.getWorld().getPlayers().forEach(player ->
+                    player.teleport(currentMatch.getWorld().getSpawnLocation())
+            );
+
+            // Now it's safe to end the old match
+            oldMatch.end();
+        }
     }
 
     public void loadMap(String mapName) {
-        if (currentMatch != null) {
-            currentMatch.end();
-        }
+        // Don't end the current match here - it will be ended after player transfer
 
         try {
             String matchId = UUID.randomUUID().toString().substring(0, 8).toLowerCase();
@@ -80,6 +103,12 @@ public class MatchManager {
                             plugin.getLogger().log(Level.WARNING, "Failed to copy: " + sourcePath, e);
                         }
                     });
+
+            // Ensure matches directory exists
+            File matchesDir = new File(Bukkit.getWorldContainer(), MATCHES_FOLDER);
+            if (!matchesDir.exists()) {
+                matchesDir.mkdirs();
+            }
 
             // Load world with void generator
             WorldCreator worldCreator = new WorldCreator(matchPath);

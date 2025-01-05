@@ -25,8 +25,10 @@ public class GameStateModule implements Module {
     private GameListener listener;
     private BukkitTask countdownTask;
     private BukkitTask waitingMessageTask;
+    private BukkitTask cycleTask;
 
-    private static final int MIN_PLAYERS = 2; // Configurable minimum
+    private static final int MIN_PLAYERS = 2;
+    private static final int CYCLE_DELAY_TICKS = 200; // 10 seconds
 
     @Getter
     private GameState currentState;
@@ -63,8 +65,8 @@ public class GameStateModule implements Module {
                         waitingMessageTask.cancel();
                     }
                 },
-                60L, // Initial delay of 3 seconds
-                600L // Repeat every 30 seconds (20 ticks * 30)
+                60L,
+                600L
         );
     }
 
@@ -87,6 +89,9 @@ public class GameStateModule implements Module {
         if (waitingMessageTask != null) {
             waitingMessageTask.cancel();
         }
+        if (cycleTask != null) {
+            cycleTask.cancel();
+        }
     }
 
     public void setState(GameState newState) {
@@ -95,7 +100,6 @@ public class GameStateModule implements Module {
         GameState oldState = this.currentState;
         this.currentState = newState;
 
-        // Handle state transitions
         switch (newState) {
             case WAITING:
                 match.getWorld().getPlayers().forEach(player -> {
@@ -106,7 +110,7 @@ public class GameStateModule implements Module {
                 break;
 
             case COUNTDOWN:
-                startCountdown(10); // Default 10 seconds
+                startCountdown(10);
                 break;
 
             case PLAYING:
@@ -132,9 +136,13 @@ public class GameStateModule implements Module {
                             Title.Times.times(Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofSeconds(1))
                     ));
                 });
-                // Schedule match end after showing end screen
-                Variorum.get().getServer().getScheduler().runTaskLater(Variorum.get(),
-                        () -> match.end(), 100L);
+
+                // Schedule map cycling
+                cycleTask = Variorum.get().getServer().getScheduler().runTaskLater(
+                        Variorum.get(),
+                        () -> Variorum.get().getMatchManager().cycleToNextMatch(),
+                        CYCLE_DELAY_TICKS
+                );
                 break;
         }
 
@@ -142,7 +150,6 @@ public class GameStateModule implements Module {
     }
 
     public void startCountdown(int seconds) {
-        // Cancel any existing countdown
         if (countdownTask != null) {
             countdownTask.cancel();
         }
@@ -165,12 +172,10 @@ public class GameStateModule implements Module {
                         return;
                     }
 
-                    // Show countdown to all players
-                    // For longer countdowns, only show messages at specific intervals
-                    boolean shouldAnnounce = secondsLeft[0] <= 5 || // Last 5 seconds
-                            secondsLeft[0] <= 30 && secondsLeft[0] % 5 == 0 || // Every 5s under 30s
-                            secondsLeft[0] <= 60 && secondsLeft[0] % 10 == 0 || // Every 10s under 60s
-                            secondsLeft[0] % 30 == 0; // Every 30s otherwise
+                    boolean shouldAnnounce = secondsLeft[0] <= 5 ||
+                            secondsLeft[0] <= 30 && secondsLeft[0] % 5 == 0 ||
+                            secondsLeft[0] <= 60 && secondsLeft[0] % 10 == 0 ||
+                            secondsLeft[0] % 30 == 0;
 
                     if (shouldAnnounce) {
                         match.getWorld().getPlayers().forEach(player -> {
@@ -195,13 +200,11 @@ public class GameStateModule implements Module {
         @EventHandler
         public void onPlayerJoin(PlayerJoinEvent event) {
             if (currentState == GameState.WAITING) {
-                // Start countdown if enough players
                 if (match.getWorld().getPlayers().size() >= MIN_PLAYERS) {
                     setState(GameState.COUNTDOWN);
                 }
             }
 
-            // Set appropriate gamemode
             switch (currentState) {
                 case WAITING, COUNTDOWN, ENDED:
                     event.getPlayer().setGameMode(GameMode.ADVENTURE);
