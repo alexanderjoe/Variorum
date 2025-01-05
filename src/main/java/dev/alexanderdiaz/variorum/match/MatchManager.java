@@ -18,6 +18,7 @@ import java.util.logging.Level;
 
 public class MatchManager {
     private final Variorum plugin;
+    private final MatchFactory matchFactory;
     @Getter
     private Match currentMatch;
     private static final String MATCHES_FOLDER = "matches";
@@ -25,6 +26,7 @@ public class MatchManager {
 
     public MatchManager(Variorum plugin) {
         this.plugin = plugin;
+        this.matchFactory = new MatchFactory();
     }
 
     public void loadMap(String mapName) {
@@ -41,6 +43,13 @@ public class MatchManager {
             if (!sourceWorldFolder.exists()) {
                 throw new IllegalStateException("Source world folder does not exist: " + sourceWorldFolder);
             }
+
+            // Get map config
+            File mapConfig = new File(sourceWorldFolder, "map.xml");
+            if (!mapConfig.exists()) {
+                throw new IllegalStateException("Map config does not exist: " + mapConfig);
+            }
+            plugin.getLogger().info("Found map config at: " + mapConfig.getAbsolutePath());
 
             File targetWorldFolder = new File(Bukkit.getWorldContainer(), matchPath);
             targetWorldFolder.getParentFile().mkdirs();
@@ -87,14 +96,19 @@ public class MatchManager {
 
             world.setAutoSave(false);
 
-            File mapConfig = new File(sourceWorldFolder, "map.xml");
+            // Load the map config
             VariorumMap map = VariorumMapFactory.load(mapConfig);
+            plugin.getLogger().info("Loaded map config: " + map.getName());
 
-            currentMatch = new Match(map, world);
+            // Create match with factory
+            currentMatch = matchFactory.create(map, mapConfig, world);
+            // Start the match (which enables modules)
+            currentMatch.start();
 
             plugin.getLogger().info("Successfully loaded map: " + mapName + " with ID: " + matchId);
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load map: " + mapName, e);
+            e.printStackTrace();
         }
     }
 }
