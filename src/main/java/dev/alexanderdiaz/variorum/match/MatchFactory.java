@@ -5,6 +5,7 @@ import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.chat.ChatModuleFactory;
+import dev.alexanderdiaz.variorum.module.objectives.ObjectivesModuleFactory;
 import dev.alexanderdiaz.variorum.module.spawn.SpawnModuleFactory;
 import dev.alexanderdiaz.variorum.module.state.GameStateModuleFactory;
 import dev.alexanderdiaz.variorum.module.team.TeamsModuleFactory;
@@ -38,6 +39,7 @@ public class MatchFactory {
         register(SpawnModuleFactory.class);
         register(ChatModuleFactory.class);
         register(GameStateModuleFactory.class);
+        register(ObjectivesModuleFactory.class);
     }
 
     public <F extends ModuleFactory<M>, M extends Module> void register(Class<F> clazz) {

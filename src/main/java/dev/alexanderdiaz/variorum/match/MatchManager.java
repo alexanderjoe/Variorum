@@ -6,11 +6,15 @@ import dev.alexanderdiaz.variorum.map.VariorumMapFactory;
 import dev.alexanderdiaz.variorum.map.rotation.DefaultRotationProvider;
 import dev.alexanderdiaz.variorum.map.rotation.Rotation;
 import dev.alexanderdiaz.variorum.map.rotation.RotationProvider;
+import dev.alexanderdiaz.variorum.module.spawn.SpawnModule;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,18 +42,18 @@ public class MatchManager {
     public void cycleToNextMatch() {
         Match oldMatch = currentMatch;
 
-        // Get next map and load it
         String nextMap = rotationProvider.provideRotation().getNextMap();
         loadMap(nextMap);
 
-        // If we have a new match, move players before ending the old one
         if (currentMatch != null && oldMatch != null) {
-            // Move all players from old match to new match
-            oldMatch.getWorld().getPlayers().forEach(player ->
-                    player.teleport(currentMatch.getWorld().getSpawnLocation())
-            );
+            SpawnModule spawnModule = currentMatch.getRequiredModule(SpawnModule.class);
+            Location spawnLocation = spawnModule.getDefaultSpawn();
 
-            // Now it's safe to end the old match
+            oldMatch.getWorld().getPlayers().forEach(player -> {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 3, false, true));
+                player.teleport(spawnLocation);
+            });
+
             oldMatch.end();
         }
     }

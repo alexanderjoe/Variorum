@@ -204,15 +204,6 @@ public class GameStateModule implements Module {
                     setState(GameState.COUNTDOWN);
                 }
             }
-
-            switch (currentState) {
-                case WAITING, COUNTDOWN, ENDED:
-                    event.getPlayer().setGameMode(GameMode.ADVENTURE);
-                    break;
-                case PLAYING:
-                    event.getPlayer().setGameMode(GameMode.SURVIVAL);
-                    break;
-            }
         }
 
         @EventHandler

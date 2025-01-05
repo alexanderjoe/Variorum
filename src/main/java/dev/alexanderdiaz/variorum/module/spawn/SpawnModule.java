@@ -37,13 +37,13 @@ public class SpawnModule implements Module {
     public void handleMatchStart() {
         World matchWorld = match.getWorld();
         // Get teams module to check player participation
-        match.getModule(TeamsModule.class).ifPresent(teamsModule -> {
-            matchWorld.getPlayers().forEach(player -> {
-                // Only teleport players who are on a team
-                if (teamsModule.getPlayerTeam(player).isPresent()) {
-                    teleportToSpawn(player);
-                }
-            });
+        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+
+        matchWorld.getPlayers().forEach(player -> {
+            // Only teleport players who are on a team
+            if (teamsModule.getPlayerTeam(player).isPresent()) {
+                teleportToSpawn(player);
+            }
         });
     }
 
@@ -74,10 +74,16 @@ public class SpawnModule implements Module {
             }
         }
 
+        return getDefaultSpawn();
+    }
 
-        // Fall back to default spawn if no team spawn is available
+    public Location getDefaultSpawn() {
+        World matchWorld = match.getWorld();
+        VariorumMap map = match.getMap();
+
         VariorumMap.Point defaultPoint = map.getSpawns().getDefaultSpawn().getPoint();
         double defaultYaw = map.getSpawns().getDefaultSpawn().getYaw();
+
         return new Location(matchWorld,
                 defaultPoint.getX(),
                 defaultPoint.getY(),
