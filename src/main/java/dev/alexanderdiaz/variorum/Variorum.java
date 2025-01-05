@@ -56,14 +56,6 @@ public final class Variorum extends JavaPlugin {
             // Get the current match and check modules
             Match match = getMatchManager().getCurrentMatch();
             if (match != null) {
-                match.getModule(dev.alexanderdiaz.variorum.module.team.TeamsModule.class).ifPresent(teamsModule -> {
-                    getLogger().info("Teams loaded: " + teamsModule.getTeams().size());
-                    teamsModule.getTeams().forEach(team ->
-                            getLogger().info("Team: " + team.getName() + " (Color: " + team.getColor() + ")")
-                    );
-                });
-
-                // Start the match which will enable all modules
                 match.start();
             }
         }, 40);

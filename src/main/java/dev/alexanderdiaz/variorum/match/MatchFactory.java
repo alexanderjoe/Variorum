@@ -4,7 +4,9 @@ import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
+import dev.alexanderdiaz.variorum.module.chat.ChatModuleFactory;
 import dev.alexanderdiaz.variorum.module.spawn.SpawnModuleFactory;
+import dev.alexanderdiaz.variorum.module.state.GameStateModuleFactory;
 import dev.alexanderdiaz.variorum.module.team.TeamsModuleFactory;
 import lombok.Getter;
 import org.bukkit.World;
@@ -34,7 +36,8 @@ public class MatchFactory {
         // Register all module factories
         register(TeamsModuleFactory.class);
         register(SpawnModuleFactory.class);
-        // Add more module factories here as they are created
+        register(ChatModuleFactory.class);
+        register(GameStateModuleFactory.class);
     }
 
     public <F extends ModuleFactory<M>, M extends Module> void register(Class<F> clazz) {

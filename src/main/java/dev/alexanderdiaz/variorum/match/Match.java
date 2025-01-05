@@ -1,5 +1,6 @@
 package dev.alexanderdiaz.variorum.match;
 
+import com.google.common.base.Preconditions;
 import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.module.Module;
@@ -55,6 +56,12 @@ public class Match {
     @SuppressWarnings("unchecked")
     public <T extends Module> Optional<T> getModule(Class<T> clazz) {
         return Optional.ofNullable((T) modules.get(clazz));
+    }
+
+    public <T extends Module> T getRequiredModule(Class<T> type) {
+        Optional<T> module = getModule(type);
+        Preconditions.checkArgument(module.isPresent(), "Required module is not present.");
+        return module.get();
     }
 
     /**

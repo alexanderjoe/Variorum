@@ -17,7 +17,7 @@ public class TeamsModuleFactory implements ModuleFactory<TeamsModule> {
             return Optional.empty();
         }
 
-        List<TeamsModule.Team> teams = new ArrayList<>();
+        List<Team> teams = new ArrayList<>();
         for (int i = 0; i < teamNodes.getLength(); i++) {
             Element teamElement = (Element) teamNodes.item(i);
 
@@ -25,7 +25,7 @@ public class TeamsModuleFactory implements ModuleFactory<TeamsModule> {
             String name = teamElement.getTextContent();
             String color = teamElement.getAttribute("color");
 
-            teams.add(new TeamsModule.Team(id, name, color));
+            teams.add(new Team(id, name, color));
         }
 
         return Optional.of(new TeamsModule(match, teams));

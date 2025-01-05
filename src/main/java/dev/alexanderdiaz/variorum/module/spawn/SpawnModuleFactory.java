@@ -9,7 +9,6 @@ import java.util.Optional;
 public class SpawnModuleFactory implements ModuleFactory<SpawnModule> {
     @Override
     public Optional<SpawnModule> build(Match match, Element root) {
-        // We'll always create a spawn module if there's a spawns section
         if (root.getElementsByTagName("spawns").getLength() > 0) {
             return Optional.of(new SpawnModule(match));
         }
