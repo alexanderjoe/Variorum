@@ -24,7 +24,7 @@ public class TeamCommands {
         this.plugin = plugin;
     }
 
-    @Command("team join <team>")
+    @Command("join <team>")
     @CommandDescription("Join a specific team")
     public void joinTeam(
             final Player player,
@@ -67,7 +67,7 @@ public class TeamCommands {
         teamsModule.setPlayerTeam(player, to);
     }
 
-    @Command("team auto")
+    @Command("auto")
     @CommandDescription("Join a balanced team automatically")
     public void autoJoin(final Player player) {
         Match match = Variorum.getMatch();
@@ -101,7 +101,7 @@ public class TeamCommands {
         teamsModule.setPlayerTeam(player, autoTeam);
     }
 
-    @Command("team leave")
+    @Command("leave")
     @CommandDescription("Leave your current team")
     public void leaveTeam(final Player player) {
         Match match = Variorum.getMatch();

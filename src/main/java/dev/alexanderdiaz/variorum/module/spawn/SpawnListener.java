@@ -3,6 +3,7 @@ package dev.alexanderdiaz.variorum.module.spawn;
 import dev.alexanderdiaz.variorum.event.team.PlayerChangeTeamEvent;
 import dev.alexanderdiaz.variorum.module.state.GameState;
 import dev.alexanderdiaz.variorum.module.state.GameStateChangeEvent;
+import dev.alexanderdiaz.variorum.module.state.GameStateModule;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.event.EventHandler;
@@ -37,8 +38,11 @@ public class SpawnListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerChangeTeam(PlayerChangeTeamEvent event) {
-        // Teleport player to their new team spawn
-        module.teleportToSpawn(event.getPlayer());
+        GameStateModule gameState = module.getMatch().getRequiredModule(GameStateModule.class);
+
+        if (GameState.PLAYING.equals(gameState.getCurrentState())) {
+            module.teleportToSpawn(event.getPlayer());
+        }
     }
 
     @EventHandler

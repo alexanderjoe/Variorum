@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ObjectivesModuleFactory implements ModuleFactory<ObjectivesModule> {
+public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
     @Override
     public Optional<ObjectivesModule> build(Match match, Element root) {
         Element objectivesElement = (Element) root.getElementsByTagName("objectives").item(0);

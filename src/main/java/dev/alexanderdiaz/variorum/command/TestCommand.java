@@ -12,12 +12,12 @@ public class TestCommand {
         this.plugin = plugin;
     }
 
-    @Command("pong")
+    @Command("cycle")
     @CommandDescription("Command to return \"ping\"")
     public void pong(
             final CommandSender sender
             ) {
 
-        sender.sendMessage("Pong!");
+        Variorum.get().getMatchManager().cycleToNextMatch();
     }
 }

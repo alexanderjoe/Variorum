@@ -2,6 +2,7 @@ package dev.alexanderdiaz.variorum.module.team;
 
 import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.event.team.PlayerChangeTeamEvent;
+import dev.alexanderdiaz.variorum.event.team.PlayerTeamScoreboardEvent;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.util.Events;
@@ -46,10 +47,6 @@ public class TeamsModule implements Module {
 
         // Fire team change event
         var event = new PlayerChangeTeamEvent(player, oldTeam, team);
-        Events.call(event);
-        if (event.isCancelled()) {
-            return;
-        }
 
         if (oldTeam != null) {
             org.bukkit.scoreboard.Team scoreboardTeam = scoreboard.getTeam(oldTeam.id());
@@ -68,7 +65,9 @@ public class TeamsModule implements Module {
             scoreboardTeam.prefix(Component.text("[" + team.name() + "] "));
         }
         scoreboardTeam.addEntry(player.getName());
-        player.setScoreboard(scoreboard);
+
+        Events.call(event);
+        Events.call(new PlayerTeamScoreboardEvent(player, scoreboard));
     }
 
     public void removePlayerFromTeam(Player player) {

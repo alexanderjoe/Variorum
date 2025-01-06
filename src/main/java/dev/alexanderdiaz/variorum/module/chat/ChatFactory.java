@@ -6,7 +6,7 @@ import org.w3c.dom.Element;
 
 import java.util.Optional;
 
-public class ChatModuleFactory implements ModuleFactory<ChatModule> {
+public class ChatFactory implements ModuleFactory<ChatModule> {
     @Override
     public Optional<ChatModule> build(Match match, Element root) {
         // Chat module is always created as it's a core feature

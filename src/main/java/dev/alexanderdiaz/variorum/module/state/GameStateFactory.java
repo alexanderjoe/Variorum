@@ -6,7 +6,7 @@ import org.w3c.dom.Element;
 
 import java.util.Optional;
 
-public class GameStateModuleFactory implements ModuleFactory<GameStateModule> {
+public class GameStateFactory implements ModuleFactory<GameStateModule> {
     @Override
     public Optional<GameStateModule> build(Match match, Element root) {
         // Game state module is always created as it's a core feature

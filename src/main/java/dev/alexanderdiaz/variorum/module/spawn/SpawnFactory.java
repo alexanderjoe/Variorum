@@ -6,7 +6,7 @@ import org.w3c.dom.Element;
 
 import java.util.Optional;
 
-public class SpawnModuleFactory implements ModuleFactory<SpawnModule> {
+public class SpawnFactory implements ModuleFactory<SpawnModule> {
     @Override
     public Optional<SpawnModule> build(Match match, Element root) {
         if (root.getElementsByTagName("spawns").getLength() > 0) {

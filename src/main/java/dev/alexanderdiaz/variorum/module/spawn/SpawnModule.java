@@ -99,6 +99,10 @@ public class SpawnModule implements Module {
             return;
         }
 
+        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+        Team playerTeam = teamsModule.getPlayerTeam(player).orElse(null);
+
+        Variorum.get().getLogger().info("Player is on team: " + playerTeam);
         Location spawn = getSpawnLocation(player);
         player.teleport(spawn);
         Variorum.get().getLogger().info("Teleported " + player.getName() + " to spawn at " +

@@ -21,18 +21,4 @@ public class ObjectivesListener implements Listener {
             module.getObjectives().forEach(Objective::enable);
         }
     }
-
-    @EventHandler
-    public void onMonumentDestroyed(MonumentDestroyedEvent event) {
-        // Check if all objectives are completed
-        boolean allCompleted = module.getObjectives().stream()
-                .allMatch(Objective::isCompleted);
-
-        if (allCompleted) {
-            // Here you could fire a match completion event or handle win conditions
-            // This would be expanded based on your game rules
-            event.getMatch().getRequiredModule(dev.alexanderdiaz.variorum.module.state.GameStateModule.class)
-                    .setState(GameState.ENDED);
-        }
-    }
 }

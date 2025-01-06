@@ -20,7 +20,6 @@ public class MonumentObjective implements Objective {
     @Getter
     private final Region region;
     private final Set<Material> materials;
-    private MonumentListener listener;
     private boolean broken = false;
 
     public MonumentObjective(Match match, String name, Team owner, Region region, Set<Material> materials) {
@@ -33,15 +32,12 @@ public class MonumentObjective implements Objective {
 
     @Override
     public void enable() {
-        this.listener = new MonumentListener(this);
-        Events.register(listener);
+        // No longer needs to register a listener
     }
 
     @Override
     public void disable() {
-        if (listener != null) {
-            Events.unregister(listener);
-        }
+        // No longer needs to unregister a listener
     }
 
     @Override
