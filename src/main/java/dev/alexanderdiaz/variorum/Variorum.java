@@ -6,6 +6,8 @@ import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.match.MatchManager;
 import dev.alexanderdiaz.variorum.util.Events;
 import lombok.Getter;
+import net.megavex.scoreboardlibrary.api.ScoreboardLibrary;
+import net.megavex.scoreboardlibrary.api.exception.NoPacketAdapterAvailableException;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,6 +23,9 @@ public final class Variorum extends JavaPlugin {
 
     @Getter
     private MatchManager matchManager;
+
+    @Getter
+    private ScoreboardLibrary scoreboardLibrary;
 
     public static Variorum get() {
         return instance;
@@ -51,6 +56,12 @@ public final class Variorum extends JavaPlugin {
         getServer().getScheduler().runTaskLater(get(), () -> {
             matchManager.cycleToNextMatch();
         }, 20);
+
+        try {
+            scoreboardLibrary = ScoreboardLibrary.loadScoreboardLibrary(instance);
+        } catch (NoPacketAdapterAvailableException e) {
+            instance.getLogger().log(Level.SEVERE, "Exception while loading scoreboard library", e);
+        }
     }
 
     @Override
@@ -59,6 +70,7 @@ public final class Variorum extends JavaPlugin {
             matchManager.getCurrentMatch().end();
         }
 
+        scoreboardLibrary.close();
         cleanupOldMatches();
     }
 

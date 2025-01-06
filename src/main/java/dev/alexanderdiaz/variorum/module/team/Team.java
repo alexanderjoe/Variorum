@@ -29,7 +29,7 @@ public class Team {
             case "blue" -> NamedTextColor.BLUE;
             case "green" -> NamedTextColor.GREEN;
             case "red" -> NamedTextColor.RED;
-            case "light_purple" -> NamedTextColor.LIGHT_PURPLE;
+            case "light_purple", "purple" -> NamedTextColor.LIGHT_PURPLE;
             case "yellow" -> NamedTextColor.YELLOW;
             case "white" -> NamedTextColor.WHITE;
             default -> NamedTextColor.AQUA;

@@ -2,11 +2,15 @@ package dev.alexanderdiaz.variorum.match;
 
 import com.google.common.base.Preconditions;
 import dev.alexanderdiaz.variorum.Variorum;
+import dev.alexanderdiaz.variorum.event.match.MatchLoadEvent;
+import dev.alexanderdiaz.variorum.event.match.MatchOpenEvent;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.module.Module;
+import dev.alexanderdiaz.variorum.util.Events;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.yaml.snakeyaml.events.MappingStartEvent;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -78,6 +82,9 @@ public class Match {
                 Variorum.get().getLogger().log(Level.SEVERE, "Failed to enable module " + module.getClass().getSimpleName(), e);
             }
         }
+
+        MatchOpenEvent moe = new MatchOpenEvent(this);
+        Events.call(moe);
     }
 
     /**

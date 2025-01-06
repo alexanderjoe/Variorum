@@ -1,5 +1,6 @@
 package dev.alexanderdiaz.variorum.module.results;
 
+import dev.alexanderdiaz.variorum.event.match.MatchCompleteEvent;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesModule;
@@ -138,9 +139,12 @@ public class ResultsModule implements Module {
                             .append(Component.text(" objectives completed", NamedTextColor.GRAY))
                             .build());
                 });
+
             });
 
             // End the match
+            MatchCompleteEvent mce = new MatchCompleteEvent(match, List.of(), List.of());
+            Events.call(mce);
             stateModule.setState(GameState.ENDED);
         }
     }

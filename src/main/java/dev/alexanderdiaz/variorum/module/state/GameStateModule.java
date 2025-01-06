@@ -9,13 +9,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.GameMode;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.time.Duration;
@@ -27,8 +20,8 @@ public class GameStateModule implements Module {
     private BukkitTask waitingMessageTask;
     private BukkitTask cycleTask;
 
-    private static final int MIN_PLAYERS = 2;
-    private static final int CYCLE_DELAY_TICKS = 200; // 10 seconds
+    protected static final int MIN_PLAYERS = 2;
+    protected static final int CYCLE_DELAY_TICKS = 200; // 10 seconds
 
     @Getter
     private GameState currentState;
@@ -72,7 +65,7 @@ public class GameStateModule implements Module {
 
     @Override
     public void enable() {
-        this.listener = new GameListener();
+        this.listener = new GameListener(match, this);
         Events.register(listener);
         setState(GameState.WAITING);
         startWaitingMessages();
@@ -194,37 +187,5 @@ public class GameStateModule implements Module {
                 },
                 0L, 20L
         );
-    }
-
-    private class GameListener implements Listener {
-        @EventHandler
-        public void onPlayerJoin(PlayerJoinEvent event) {
-            if (currentState == GameState.WAITING) {
-                if (match.getWorld().getPlayers().size() >= MIN_PLAYERS) {
-                    setState(GameState.COUNTDOWN);
-                }
-            }
-        }
-
-        @EventHandler
-        public void onBlockBreak(BlockBreakEvent event) {
-            if (currentState != GameState.PLAYING) {
-                event.setCancelled(true);
-            }
-        }
-
-        @EventHandler
-        public void onBlockPlace(BlockPlaceEvent event) {
-            if (currentState != GameState.PLAYING) {
-                event.setCancelled(true);
-            }
-        }
-
-        @EventHandler
-        public void onEntityDamage(EntityDamageEvent event) {
-            if (currentState != GameState.PLAYING && event.getEntity() instanceof Player) {
-                event.setCancelled(true);
-            }
-        }
     }
 }

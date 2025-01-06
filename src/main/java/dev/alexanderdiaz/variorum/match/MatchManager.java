@@ -1,20 +1,17 @@
 package dev.alexanderdiaz.variorum.match;
 
 import dev.alexanderdiaz.variorum.Variorum;
+import dev.alexanderdiaz.variorum.event.match.MatchLoadEvent;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.map.VariorumMapFactory;
 import dev.alexanderdiaz.variorum.map.rotation.DefaultRotationProvider;
-import dev.alexanderdiaz.variorum.map.rotation.Rotation;
 import dev.alexanderdiaz.variorum.map.rotation.RotationProvider;
-import dev.alexanderdiaz.variorum.module.spawn.SpawnModule;
+import dev.alexanderdiaz.variorum.util.Events;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,14 +43,6 @@ public class MatchManager {
         loadMap(nextMap);
 
         if (currentMatch != null && oldMatch != null) {
-            SpawnModule spawnModule = currentMatch.getRequiredModule(SpawnModule.class);
-            Location spawnLocation = spawnModule.getDefaultSpawn();
-
-            oldMatch.getWorld().getPlayers().forEach(player -> {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 3, false, true));
-                player.teleport(spawnLocation);
-            });
-
             oldMatch.end();
         }
     }
@@ -137,6 +126,9 @@ public class MatchManager {
             currentMatch = matchFactory.create(map, mapConfig, world);
             // Start the match (which enables modules)
             currentMatch.start();
+
+            MatchLoadEvent matchLoadEvent = new MatchLoadEvent(currentMatch);
+            Events.call(matchLoadEvent);
 
             plugin.getLogger().info("Successfully loaded map: " + mapName + " with ID: " + matchId);
         } catch (Exception e) {

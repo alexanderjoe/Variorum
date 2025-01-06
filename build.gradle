@@ -32,6 +32,11 @@ dependencies {
     implementation("org.incendo:cloud-annotations:2.0.0")
     implementation("org.incendo:cloud-paper:2.0.0-beta.10")
     implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.10")
+
+    var scoreboardLibraryVersion = "2.2.2"
+    implementation("net.megavex:scoreboard-library-api:$scoreboardLibraryVersion")
+    runtimeOnly("net.megavex:scoreboard-library-implementation:$scoreboardLibraryVersion")
+    runtimeOnly("net.megavex:scoreboard-library-modern:$scoreboardLibraryVersion")
 }
 
 def targetJavaVersion = 21
@@ -58,7 +63,9 @@ tasks.named('shadowJar', ShadowJar) {
     relocate("xyz.jpenilla.reflectionremapper", "dev.alexanderdiaz.variorum.lib.reflectionremapper")
     relocate("net.fabricmc.mappingio", "dev.alexanderdiaz.variorum.lib.mappingio")
 
-    minimize()
+    relocate("net.megavex.scoreboardlibrary", "dev.alexanderdiaz.variorum.lib.scoreboardlibrary")
+
+//    minimize()
 
     exclude 'META_INF/*.SF'
     exclude 'META_INF/*.DSA'

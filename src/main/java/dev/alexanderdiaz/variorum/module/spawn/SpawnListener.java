@@ -1,11 +1,13 @@
 package dev.alexanderdiaz.variorum.module.spawn;
 
+import dev.alexanderdiaz.variorum.event.match.MatchOpenEvent;
 import dev.alexanderdiaz.variorum.event.team.PlayerChangeTeamEvent;
 import dev.alexanderdiaz.variorum.module.state.GameState;
 import dev.alexanderdiaz.variorum.module.state.GameStateChangeEvent;
 import dev.alexanderdiaz.variorum.module.state.GameStateModule;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -40,6 +42,10 @@ public class SpawnListener implements Listener {
     public void onPlayerChangeTeam(PlayerChangeTeamEvent event) {
         GameStateModule gameState = module.getMatch().getRequiredModule(GameStateModule.class);
 
+        if(event.getToTeam() == null) {
+            return;
+        }
+
         if (GameState.PLAYING.equals(gameState.getCurrentState())) {
             module.teleportToSpawn(event.getPlayer());
         }
@@ -50,5 +56,10 @@ public class SpawnListener implements Listener {
         if (event.getNewState() == GameState.PLAYING) {
             module.handleMatchStart();
         }
+    }
+
+    @EventHandler
+    public void onMatchOpen(MatchOpenEvent event) {
+        Bukkit.getOnlinePlayers().forEach(module::teleportToSpawn);
     }
 }

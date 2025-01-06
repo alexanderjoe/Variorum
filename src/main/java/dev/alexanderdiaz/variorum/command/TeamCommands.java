@@ -112,7 +112,7 @@ public class TeamCommands {
 
         // Check match state
         GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
-        if (stateModule.getCurrentState() == GameState.ENDED) {
+        if (GameState.ENDED.equals(stateModule.getCurrentState())) {
             player.sendMessage(Component.text("Cannot leave teams while the match is cycling!", NamedTextColor.RED));
             return;
         }
