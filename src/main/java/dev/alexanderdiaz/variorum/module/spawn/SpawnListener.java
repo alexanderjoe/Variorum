@@ -30,7 +30,7 @@ public class SpawnListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         event.joinMessage(null);
         // Delay the teleport by 1 tick to ensure everything is loaded
-        module.teleportToSpawn(event.getPlayer());
+        module.spawnPlayer(event.getPlayer());
     }
 
     @EventHandler
@@ -47,7 +47,7 @@ public class SpawnListener implements Listener {
         }
 
         if (GameState.PLAYING.equals(gameState.getCurrentState())) {
-            module.teleportToSpawn(event.getPlayer());
+            module.spawnPlayer(event.getPlayer());
         }
     }
 
@@ -60,6 +60,6 @@ public class SpawnListener implements Listener {
 
     @EventHandler
     public void onMatchOpen(MatchOpenEvent event) {
-        Bukkit.getOnlinePlayers().forEach(module::teleportToSpawn);
+        Bukkit.getOnlinePlayers().forEach(module::spawnPlayer);
     }
 }

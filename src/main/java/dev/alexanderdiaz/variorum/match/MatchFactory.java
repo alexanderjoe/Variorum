@@ -5,6 +5,7 @@ import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.chat.ChatFactory;
+import dev.alexanderdiaz.variorum.module.loadouts.LoadoutsFactory;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesFactory;
 import dev.alexanderdiaz.variorum.module.results.ResultsFactory;
 import dev.alexanderdiaz.variorum.module.scoreboard.ScoreboardFactory;
@@ -44,6 +45,7 @@ public class MatchFactory {
         register(ObjectivesFactory.class);
         register(ResultsFactory.class);
         register(ScoreboardFactory.class);
+        register(LoadoutsFactory.class);
     }
 
     public <F extends ModuleFactory<M>, M extends Module> void register(Class<F> clazz) {

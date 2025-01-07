@@ -4,6 +4,7 @@ import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
+import dev.alexanderdiaz.variorum.module.loadouts.LoadoutsModule;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
 import dev.alexanderdiaz.variorum.util.Events;
@@ -36,13 +37,12 @@ public class SpawnModule implements Module {
 
     public void handleMatchStart() {
         World matchWorld = match.getWorld();
-        // Get teams module to check player participation
         TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
 
         matchWorld.getPlayers().forEach(player -> {
-            // Only teleport players who are on a team
+            // Only teleport and give loadouts to players who are on a team
             if (teamsModule.getPlayerTeam(player).isPresent()) {
-                teleportToSpawn(player);
+                spawnPlayer(player);
             }
         });
     }
@@ -56,7 +56,6 @@ public class SpawnModule implements Module {
         Optional<Team> playerTeam = teamsModule.getPlayerTeam(player);
 
         if (playerTeam.isPresent()) {
-            // Find team spawn
             Optional<VariorumMap.Spawns.TeamSpawn> teamSpawn = map.getSpawns().getTeamSpawns()
                     .stream()
                     .filter(spawn -> spawn.getTeam().equals(playerTeam.get().id()))
@@ -77,6 +76,20 @@ public class SpawnModule implements Module {
         return getDefaultSpawn();
     }
 
+    private void applySpawnLoadout(Player player, VariorumMap.Spawns.SpawnRegion spawnRegion) {
+        match.getModule(LoadoutsModule.class).ifPresent(loadoutsModule -> {
+            Team team = match.getRequiredModule(TeamsModule.class)
+                    .getPlayerTeam(player)
+                    .orElse(null);
+
+            // Apply spawn-specific loadout if specified, otherwise use default
+            String loadoutId = spawnRegion.getLoadout() != null ? spawnRegion.getLoadout() : "default";
+            if (loadoutsModule.getLoadouts().containsKey(loadoutId)) {
+                loadoutsModule.applyLoadout(player, loadoutId, team);
+            }
+        });
+    }
+
     public Location getDefaultSpawn() {
         World matchWorld = match.getWorld();
         VariorumMap map = match.getMap();
@@ -92,20 +105,36 @@ public class SpawnModule implements Module {
                 0.0f);
     }
 
-    public void teleportToSpawn(Player player) {
+    public void spawnPlayer(Player player) {
         World matchWorld = match.getWorld();
         if (matchWorld == null) {
-            Variorum.get().getLogger().warning("Match world is null when trying to teleport " + player.getName());
+            Variorum.get().getLogger().warning("Match world is null when trying to spawn " + player.getName());
             return;
         }
 
         TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
         Team playerTeam = teamsModule.getPlayerTeam(player).orElse(null);
 
-        Variorum.get().getLogger().info("Player is on team: " + playerTeam);
+        // Get spawn location and apply loadout
         Location spawn = getSpawnLocation(player);
         player.teleport(spawn);
-        Variorum.get().getLogger().info("Teleported " + player.getName() + " to spawn at " +
+
+        // Apply loadout based on spawn point
+        if (playerTeam != null) {
+            VariorumMap map = match.getMap();
+            Optional<VariorumMap.Spawns.TeamSpawn> teamSpawn = map.getSpawns().getTeamSpawns()
+                    .stream()
+                    .filter(s -> s.getTeam().equals(playerTeam.id()))
+                    .findFirst();
+
+            if (teamSpawn.isPresent()) {
+                applySpawnLoadout(player, teamSpawn.get().getRegion());
+            } else {
+                applySpawnLoadout(player, map.getSpawns().getDefaultSpawn());
+            }
+        }
+
+        Variorum.get().getLogger().info("Spawned " + player.getName() + " at " +
                 String.format("%.1f, %.1f, %.1f (yaw: %.1f) in %s",
                         spawn.getX(), spawn.getY(), spawn.getZ(),
                         spawn.getYaw(), matchWorld.getName()));

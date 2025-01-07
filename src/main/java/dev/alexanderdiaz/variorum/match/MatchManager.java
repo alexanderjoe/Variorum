@@ -48,8 +48,6 @@ public class MatchManager {
     }
 
     public void loadMap(String mapName) {
-        // Don't end the current match here - it will be ended after player transfer
-
         try {
             String matchId = UUID.randomUUID().toString().substring(0, 8).toLowerCase();
             String matchWorldName = mapName.toLowerCase() + "_" + matchId;

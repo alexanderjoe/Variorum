@@ -64,6 +64,7 @@ public class TeamCommands {
             return;
         }
 
+        player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW).append(Component.text(to.name(), to.textColor())).append(Component.text(" team.", NamedTextColor.YELLOW)));
         teamsModule.setPlayerTeam(player, to);
     }
 
@@ -98,6 +99,7 @@ public class TeamCommands {
             return;
         }
 
+        player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW).append(Component.text(autoTeam.name(), autoTeam.textColor())).append(Component.text(" team.", NamedTextColor.YELLOW)));
         teamsModule.setPlayerTeam(player, autoTeam);
     }
 

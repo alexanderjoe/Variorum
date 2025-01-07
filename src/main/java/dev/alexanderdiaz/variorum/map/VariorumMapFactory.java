@@ -89,10 +89,13 @@ public class VariorumMapFactory {
 
     private static VariorumMap.Spawns.SpawnRegion createSpawnRegion(Element element) {
         Element regionsElement = (Element) element.getElementsByTagName("regions").item(0);
+        String loadout = element.getAttribute("loadout");
+
         return VariorumMap.Spawns.SpawnRegion.builder()
                 .yaw(Double.parseDouble(regionsElement.getAttribute("yaw")))
                 .point(VariorumMap.Point.fromString(
                         regionsElement.getElementsByTagName("point").item(0).getTextContent()))
+                .loadout(loadout.isEmpty() ? null : loadout)
                 .build();
     }
 

@@ -34,6 +34,7 @@ public class VariorumMap {
         public static class SpawnRegion {
             private Point point;
             private double yaw;
+            private String loadout;
         }
 
         @Data
