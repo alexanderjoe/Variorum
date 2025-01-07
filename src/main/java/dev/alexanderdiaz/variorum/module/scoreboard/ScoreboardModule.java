@@ -11,6 +11,7 @@ import dev.alexanderdiaz.variorum.module.state.GameStateChangeEvent;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
 import dev.alexanderdiaz.variorum.util.Events;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -19,6 +20,7 @@ import net.megavex.scoreboardlibrary.api.ScoreboardLibrary;
 import net.megavex.scoreboardlibrary.api.sidebar.Sidebar;
 import net.megavex.scoreboardlibrary.api.sidebar.component.ComponentSidebarLayout;
 import net.megavex.scoreboardlibrary.api.sidebar.component.SidebarComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,6 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScoreboardModule implements Module {
     private final Match match;
+    @Getter
     private Sidebar sidebar;
     private ComponentSidebarLayout layout;
     private ScoreboardListener listener;
@@ -141,8 +144,12 @@ public class ScoreboardModule implements Module {
         }
 
         @EventHandler
-        public void onGameStateChange(MatchLoadEvent event) {
-            updateLayout();
+        public void onGameStateChange(MatchOpenEvent event) {
+            Bukkit.getOnlinePlayers().forEach(player -> {
+                Variorum.get().getServer().getAsyncScheduler().runNow(Variorum.get(), task -> {
+                    addPlayer(player);
+                });
+            });
         }
 
         @EventHandler
