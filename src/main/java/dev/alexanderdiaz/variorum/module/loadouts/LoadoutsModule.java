@@ -117,7 +117,7 @@ public class LoadoutsModule implements Module {
             case "JUMP_BOOST" -> PotionEffectType.JUMP_BOOST;
             case "NAUSEA" -> PotionEffectType.NAUSEA;
             case "REGENERATION" -> PotionEffectType.REGENERATION;
-            case "RESISTANCE" -> PotionEffectType.RESISTANCE;
+            case "RESISTANCE", "DAMAGE_RESISTANCE" -> PotionEffectType.RESISTANCE;
             case "FIRE_RESISTANCE" -> PotionEffectType.FIRE_RESISTANCE;
             case "WATER_BREATHING" -> PotionEffectType.WATER_BREATHING;
             case "INVISIBILITY" -> PotionEffectType.INVISIBILITY;

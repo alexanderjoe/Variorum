@@ -8,6 +8,7 @@ import dev.alexanderdiaz.variorum.module.loadouts.LoadoutsModule;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
 import dev.alexanderdiaz.variorum.util.Events;
+import dev.alexanderdiaz.variorum.util.Players;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Location;
@@ -42,7 +43,7 @@ public class SpawnModule implements Module {
         matchWorld.getPlayers().forEach(player -> {
             // Only teleport and give loadouts to players who are on a team
             if (teamsModule.getPlayerTeam(player).isPresent()) {
-                spawnPlayer(player);
+                spawnPlayer(player, true);
             }
         });
     }
@@ -105,7 +106,7 @@ public class SpawnModule implements Module {
                 0.0f);
     }
 
-    public void spawnPlayer(Player player) {
+    public void spawnPlayer(Player player, boolean giveLoadout) {
         World matchWorld = match.getWorld();
         if (matchWorld == null) {
             Variorum.get().getLogger().warning("Match world is null when trying to spawn " + player.getName());
@@ -116,16 +117,18 @@ public class SpawnModule implements Module {
         Team playerTeam = teamsModule.getPlayerTeam(player).orElse(null);
 
         // Get spawn location and apply loadout
+        Players.reset(player);
         Location spawn = getSpawnLocation(player);
         player.teleport(spawn);
 
         // Apply loadout based on spawn point
-        if (playerTeam != null) {
+        if (playerTeam != null && giveLoadout) {
             VariorumMap map = match.getMap();
             Optional<VariorumMap.Spawns.TeamSpawn> teamSpawn = map.getSpawns().getTeamSpawns()
                     .stream()
                     .filter(s -> s.getTeam().equals(playerTeam.id()))
                     .findFirst();
+
 
             if (teamSpawn.isPresent()) {
                 applySpawnLoadout(player, teamSpawn.get().getRegion());

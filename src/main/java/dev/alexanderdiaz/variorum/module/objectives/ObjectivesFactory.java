@@ -58,8 +58,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
                     Element monumentElement = (Element) monuments.item(j);
                     String name = monumentElement.getAttribute("name");
 
-                    Element regionElement = (Element) monumentElement.getElementsByTagName("region").item(0);
-                    Region region = RegionFactory.parse(regionElement);
+                    Region region = RegionFactory.parseRequired(monumentElement, "region");
 
                     MonumentObjective monument = new MonumentObjective(
                             match,

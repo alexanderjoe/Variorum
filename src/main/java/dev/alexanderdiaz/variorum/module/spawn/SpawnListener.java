@@ -29,13 +29,13 @@ public class SpawnListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         event.joinMessage(null);
-        // Delay the teleport by 1 tick to ensure everything is loaded
-        module.spawnPlayer(event.getPlayer());
+        module.spawnPlayer(event.getPlayer(), false);
     }
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         event.setRespawnLocation(module.getSpawnLocation(event.getPlayer()));
+        module.spawnPlayer(event.getPlayer(), true);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -47,7 +47,7 @@ public class SpawnListener implements Listener {
         }
 
         if (GameState.PLAYING.equals(gameState.getCurrentState())) {
-            module.spawnPlayer(event.getPlayer());
+            module.spawnPlayer(event.getPlayer(), true);
         }
     }
 
@@ -60,6 +60,6 @@ public class SpawnListener implements Listener {
 
     @EventHandler
     public void onMatchOpen(MatchOpenEvent event) {
-        Bukkit.getOnlinePlayers().forEach(module::spawnPlayer);
+        Bukkit.getOnlinePlayers().forEach(player -> module.spawnPlayer(player, false));
     }
 }
