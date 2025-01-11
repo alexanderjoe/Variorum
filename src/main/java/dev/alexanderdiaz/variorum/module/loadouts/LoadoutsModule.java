@@ -6,6 +6,10 @@ import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutArmor;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutEffect;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutItem;
 import dev.alexanderdiaz.variorum.module.team.Team;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -17,13 +21,9 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class LoadoutsModule implements Module {
     private final Match match;
+
     @Getter
     private final Map<String, Loadout> loadouts;
 
@@ -106,55 +106,52 @@ public class LoadoutsModule implements Module {
     }
 
     private PotionEffect createEffect(LoadoutEffect effect) {
-        var parsedEffect = switch (effect.type().toUpperCase()) {
-            case "SPEED", "SWIFTNESS" -> PotionEffectType.SPEED;
-            case "SLOWNESS" -> PotionEffectType.SLOWNESS;
-            case "HASTE", "MINING_SPEED" -> PotionEffectType.HASTE;
-            case "MINING_FATIGUE" -> PotionEffectType.MINING_FATIGUE;
-            case "STRENGTH" -> PotionEffectType.STRENGTH;
-            case "INSTANT_HEALTH" -> PotionEffectType.INSTANT_HEALTH;
-            case "INSTANT_DAMAGE" -> PotionEffectType.INSTANT_DAMAGE;
-            case "JUMP_BOOST" -> PotionEffectType.JUMP_BOOST;
-            case "NAUSEA" -> PotionEffectType.NAUSEA;
-            case "REGENERATION" -> PotionEffectType.REGENERATION;
-            case "RESISTANCE", "DAMAGE_RESISTANCE" -> PotionEffectType.RESISTANCE;
-            case "FIRE_RESISTANCE" -> PotionEffectType.FIRE_RESISTANCE;
-            case "WATER_BREATHING" -> PotionEffectType.WATER_BREATHING;
-            case "INVISIBILITY" -> PotionEffectType.INVISIBILITY;
-            case "BLINDNESS" -> PotionEffectType.BLINDNESS;
-            case "NIGHT_VISION" -> PotionEffectType.NIGHT_VISION;
-            case "HUNGER" -> PotionEffectType.HUNGER;
-            case "WEAKNESS" -> PotionEffectType.WEAKNESS;
-            case "POISON" -> PotionEffectType.POISON;
-            case "WITHER" -> PotionEffectType.WITHER;
-            case "HEALTH_BOOST" -> PotionEffectType.HEALTH_BOOST;
-            case "ABSORPTION" -> PotionEffectType.ABSORPTION;
-            case "SATURATION" -> PotionEffectType.SATURATION;
-            case "GLOWING" -> PotionEffectType.GLOWING;
-            case "LEVITATION" -> PotionEffectType.LEVITATION;
-            case "LUCK" -> PotionEffectType.LUCK;
-            case "UNLUCK" -> PotionEffectType.UNLUCK;
-            case "SLOW_FALLING" -> PotionEffectType.SLOW_FALLING;
-            case "CONDUIT_POWER" -> PotionEffectType.CONDUIT_POWER;
-            case "DOLPHINS_GRACE" -> PotionEffectType.DOLPHINS_GRACE;
-            case "BAD_OMEN" -> PotionEffectType.BAD_OMEN;
-            case "HERO_OF_THE_VILLAGE" -> PotionEffectType.HERO_OF_THE_VILLAGE;
-            case "DARKNESS" -> PotionEffectType.DARKNESS;
-            case "TRIAL_OMEN" -> PotionEffectType.TRIAL_OMEN;
-            case "RAID_OMEN" -> PotionEffectType.RAID_OMEN;
-            case "WIND_CHARGED" -> PotionEffectType.WIND_CHARGED;
-            case "WEAVING" -> PotionEffectType.WEAVING;
-            case "OOZING" -> PotionEffectType.OOZING;
-            case "INFESTED" -> PotionEffectType.INFESTED;
-            default -> null;
-        };
+        var parsedEffect =
+                switch (effect.type().toUpperCase()) {
+                    case "SPEED", "SWIFTNESS" -> PotionEffectType.SPEED;
+                    case "SLOWNESS" -> PotionEffectType.SLOWNESS;
+                    case "HASTE", "MINING_SPEED" -> PotionEffectType.HASTE;
+                    case "MINING_FATIGUE" -> PotionEffectType.MINING_FATIGUE;
+                    case "STRENGTH" -> PotionEffectType.STRENGTH;
+                    case "INSTANT_HEALTH" -> PotionEffectType.INSTANT_HEALTH;
+                    case "INSTANT_DAMAGE" -> PotionEffectType.INSTANT_DAMAGE;
+                    case "JUMP_BOOST" -> PotionEffectType.JUMP_BOOST;
+                    case "NAUSEA" -> PotionEffectType.NAUSEA;
+                    case "REGENERATION" -> PotionEffectType.REGENERATION;
+                    case "RESISTANCE", "DAMAGE_RESISTANCE" -> PotionEffectType.RESISTANCE;
+                    case "FIRE_RESISTANCE" -> PotionEffectType.FIRE_RESISTANCE;
+                    case "WATER_BREATHING" -> PotionEffectType.WATER_BREATHING;
+                    case "INVISIBILITY" -> PotionEffectType.INVISIBILITY;
+                    case "BLINDNESS" -> PotionEffectType.BLINDNESS;
+                    case "NIGHT_VISION" -> PotionEffectType.NIGHT_VISION;
+                    case "HUNGER" -> PotionEffectType.HUNGER;
+                    case "WEAKNESS" -> PotionEffectType.WEAKNESS;
+                    case "POISON" -> PotionEffectType.POISON;
+                    case "WITHER" -> PotionEffectType.WITHER;
+                    case "HEALTH_BOOST" -> PotionEffectType.HEALTH_BOOST;
+                    case "ABSORPTION" -> PotionEffectType.ABSORPTION;
+                    case "SATURATION" -> PotionEffectType.SATURATION;
+                    case "GLOWING" -> PotionEffectType.GLOWING;
+                    case "LEVITATION" -> PotionEffectType.LEVITATION;
+                    case "LUCK" -> PotionEffectType.LUCK;
+                    case "UNLUCK" -> PotionEffectType.UNLUCK;
+                    case "SLOW_FALLING" -> PotionEffectType.SLOW_FALLING;
+                    case "CONDUIT_POWER" -> PotionEffectType.CONDUIT_POWER;
+                    case "DOLPHINS_GRACE" -> PotionEffectType.DOLPHINS_GRACE;
+                    case "BAD_OMEN" -> PotionEffectType.BAD_OMEN;
+                    case "HERO_OF_THE_VILLAGE" -> PotionEffectType.HERO_OF_THE_VILLAGE;
+                    case "DARKNESS" -> PotionEffectType.DARKNESS;
+                    case "TRIAL_OMEN" -> PotionEffectType.TRIAL_OMEN;
+                    case "RAID_OMEN" -> PotionEffectType.RAID_OMEN;
+                    case "WIND_CHARGED" -> PotionEffectType.WIND_CHARGED;
+                    case "WEAVING" -> PotionEffectType.WEAVING;
+                    case "OOZING" -> PotionEffectType.OOZING;
+                    case "INFESTED" -> PotionEffectType.INFESTED;
+                    default -> null;
+                };
         if (parsedEffect == null) return null;
 
-        return new PotionEffect(
-                parsedEffect,
-                parseTime(effect.duration()),
-                1
-        );
+        return new PotionEffect(parsedEffect, parseTime(effect.duration()), 1);
     }
 
     private Color getTeamColor(Team team) {
@@ -212,9 +209,9 @@ public class LoadoutsModule implements Module {
         String unit = matcher.group(2);
 
         return switch (unit) {
-            case "s" -> value * 20;          // seconds to ticks
-            case "m" -> value * 20 * 60;     // minutes to ticks
-            case "h" -> value * 20 * 60 * 60;// hours to ticks
+            case "s" -> value * 20; // seconds to ticks
+            case "m" -> value * 20 * 60; // minutes to ticks
+            case "h" -> value * 20 * 60 * 60; // hours to ticks
             default -> 20;
         };
     }

@@ -1,9 +1,9 @@
 package dev.alexanderdiaz.variorum.module.objectives.monument;
 
-import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesModule;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
+import java.util.Optional;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -13,8 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-
-import java.util.Optional;
 
 public class MonumentListener implements Listener {
     private final ObjectivesModule module;
@@ -52,7 +50,11 @@ public class MonumentListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        Team team = this.module.getMatch().getRequiredModule(TeamsModule.class).getPlayerTeam(player).orElse(null);
+        Team team = this.module
+                .getMatch()
+                .getRequiredModule(TeamsModule.class)
+                .getPlayerTeam(player)
+                .orElse(null);
 
         if (team == null) {
             return;

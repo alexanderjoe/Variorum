@@ -7,19 +7,18 @@ import dev.alexanderdiaz.variorum.map.VariorumMapFactory;
 import dev.alexanderdiaz.variorum.map.rotation.DefaultRotationProvider;
 import dev.alexanderdiaz.variorum.map.rotation.RotationProvider;
 import dev.alexanderdiaz.variorum.util.Events;
-import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.GameRule;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.generator.ChunkGenerator;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.logging.Level;
+import lombok.Getter;
+import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.generator.ChunkGenerator;
 
 public class MatchManager {
     private final Variorum plugin;
@@ -28,6 +27,7 @@ public class MatchManager {
 
     @Getter
     private Match currentMatch;
+
     private static final String MATCHES_FOLDER = "matches";
     private static final String VOID_GENERATOR = "VoidWorldGenerator";
 
@@ -80,20 +80,19 @@ public class MatchManager {
                         });
             }
 
-            Files.walk(sourceWorldFolder.toPath())
-                    .forEach(sourcePath -> {
-                        Path relativePath = sourceWorldFolder.toPath().relativize(sourcePath);
-                        Path targetPath = targetWorldFolder.toPath().resolve(relativePath);
-                        try {
-                            if (Files.isDirectory(sourcePath)) {
-                                Files.createDirectories(targetPath);
-                            } else {
-                                Files.copy(sourcePath, targetPath);
-                            }
-                        } catch (IOException e) {
-                            plugin.getLogger().log(Level.WARNING, "Failed to copy: " + sourcePath, e);
-                        }
-                    });
+            Files.walk(sourceWorldFolder.toPath()).forEach(sourcePath -> {
+                Path relativePath = sourceWorldFolder.toPath().relativize(sourcePath);
+                Path targetPath = targetWorldFolder.toPath().resolve(relativePath);
+                try {
+                    if (Files.isDirectory(sourcePath)) {
+                        Files.createDirectories(targetPath);
+                    } else {
+                        Files.copy(sourcePath, targetPath);
+                    }
+                } catch (IOException e) {
+                    plugin.getLogger().log(Level.WARNING, "Failed to copy: " + sourcePath, e);
+                }
+            });
 
             File matchesDir = new File(Bukkit.getWorldContainer(), MATCHES_FOLDER);
             if (!matchesDir.exists()) {
@@ -101,9 +100,8 @@ public class MatchManager {
             }
 
             WorldCreator worldCreator = new WorldCreator(matchPath);
-            ChunkGenerator voidGenerator = Bukkit.getPluginManager()
-                    .getPlugin(VOID_GENERATOR)
-                    .getDefaultWorldGenerator(matchPath, null);
+            ChunkGenerator voidGenerator =
+                    Bukkit.getPluginManager().getPlugin(VOID_GENERATOR).getDefaultWorldGenerator(matchPath, null);
 
             worldCreator.generator(voidGenerator);
             World world = worldCreator.createWorld();
@@ -116,7 +114,6 @@ public class MatchManager {
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
             world.setGameRule(GameRule.DO_INSOMNIA, false);
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
-
 
             VariorumMap map = VariorumMapFactory.load(mapConfig);
             plugin.getLogger().info("Loaded map config: " + map.getName());

@@ -17,7 +17,10 @@ public class VariorumListener implements Listener {
     @EventHandler
     public void playerLoginEvent(PlayerLoginEvent event) {
         if (Variorum.getMatch() == null) {
-            event.disallow(PlayerLoginEvent.Result.KICK_OTHER, Component.text("The match is still loading!\n Try again later.").color(NamedTextColor.RED));
+            event.disallow(
+                    PlayerLoginEvent.Result.KICK_OTHER,
+                    Component.text("The match is still loading!\n Try again later.")
+                            .color(NamedTextColor.RED));
         }
     }
 }

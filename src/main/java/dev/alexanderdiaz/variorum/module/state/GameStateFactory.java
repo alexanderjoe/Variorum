@@ -2,9 +2,8 @@ package dev.alexanderdiaz.variorum.module.state;
 
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
-import org.w3c.dom.Element;
-
 import java.util.Optional;
+import org.w3c.dom.Element;
 
 public class GameStateFactory implements ModuleFactory<GameStateModule> {
     @Override

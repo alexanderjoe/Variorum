@@ -1,11 +1,10 @@
 package dev.alexanderdiaz.variorum.region;
 
+import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
-
-import java.util.Set;
 
 abstract class AbstractRegion implements Region {
     @Override

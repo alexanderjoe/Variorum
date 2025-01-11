@@ -1,5 +1,7 @@
 package dev.alexanderdiaz.variorum.module.objectives;
 
+import static dev.alexanderdiaz.variorum.map.VariorumMapFactory.getElementContext;
+
 import dev.alexanderdiaz.variorum.map.MapParseException;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
@@ -11,30 +13,24 @@ import dev.alexanderdiaz.variorum.region.Region;
 import dev.alexanderdiaz.variorum.region.RegionFactory;
 import dev.alexanderdiaz.variorum.util.xml.NamedParser;
 import dev.alexanderdiaz.variorum.util.xml.NamedParsers;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static dev.alexanderdiaz.variorum.map.VariorumMapFactory.getElementContext;
-
 public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
     private static final Map<Method, Collection<String>> PARSERS = NamedParsers.getMethods(ObjectivesFactory.class);
 
     @Override
     public Optional<ObjectivesModule> build(Match match, Element root) {
-        Element objectivesElement = (Element) root.getElementsByTagName("objectives").item(0);
+        Element objectivesElement =
+                (Element) root.getElementsByTagName("objectives").item(0);
         if (objectivesElement == null) {
-            throw new MapParseException(
-                    "Failed to parse objectives",
-                    "objectives",
-                    getElementContext(root)
-            );
+            throw new MapParseException("Failed to parse objectives", "objectives", getElementContext(root));
         }
 
         ObjectivesModule module = new ObjectivesModule(match);
@@ -53,14 +49,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
 
     private void parseObjective(Match match, ObjectivesModule module, Element element, String type) {
         try {
-            NamedParsers.invoke(
-                    this,
-                    PARSERS,
-                    element,
-                    "Failed to parse objective type: " + type,
-                    match,
-                    module
-            );
+            NamedParsers.invoke(this, PARSERS, element, "Failed to parse objective type: " + type, match, module);
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to parse objective: " + type, e);
         }
@@ -97,7 +86,9 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
             String ownerStr = teamWoolsElement.getAttribute("owner");
             Optional<Team> team = Optional.empty();
             if (!ownerStr.isEmpty()) {
-                var owner = match.getRequiredModule(TeamsModule.class).getTeamById(ownerStr).orElse(null);
+                var owner = match.getRequiredModule(TeamsModule.class)
+                        .getTeamById(ownerStr)
+                        .orElse(null);
                 if (owner == null) {
                     continue;
                 }
@@ -111,11 +102,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
                     parseWool(woolElement, team, match, module);
                 } catch (Exception e) {
                     throw new MapParseException(
-                            "Failed to parse wool objective",
-                            "objectives.wools",
-                            getElementContext(woolElement),
-                            e
-                    );
+                            "Failed to parse wool objective", "objectives.wools", getElementContext(woolElement), e);
                 }
             }
         }
@@ -125,10 +112,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
         String color = woolElement.getAttribute("color");
         if (color.isEmpty()) {
             throw new MapParseException(
-                    "Wool must have a color attribute",
-                    "objectives.wools",
-                    getElementContext(woolElement)
-            );
+                    "Wool must have a color attribute", "objectives.wools", getElementContext(woolElement));
         }
 
         String name = woolElement.getAttribute("name");
@@ -146,29 +130,29 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
             pickup = Boolean.parseBoolean(woolElement.getAttribute("pickup"));
         }
 
-        Element destinationElement = (Element) woolElement.getElementsByTagName("destination").item(0);
+        Element destinationElement =
+                (Element) woolElement.getElementsByTagName("destination").item(0);
         if (destinationElement == null) {
             throw new MapParseException(
-                    "Wool must have a destination defined",
-                    "objectives.wools",
-                    getElementContext(woolElement)
-            );
+                    "Wool must have a destination defined", "objectives.wools", getElementContext(woolElement));
         }
 
-        Element regionElement = (Element) destinationElement.getElementsByTagName("*").item(0);
+        Element regionElement =
+                (Element) destinationElement.getElementsByTagName("*").item(0);
         if (regionElement == null) {
             throw new MapParseException(
                     "Wool destination must contain a region element",
                     "objectives.wools",
-                    getElementContext(destinationElement)
-            );
+                    getElementContext(destinationElement));
         }
         Region destination = RegionFactory.parse(regionElement);
 
-        Element sourceElement = (Element) woolElement.getElementsByTagName("source").item(0);
+        Element sourceElement =
+                (Element) woolElement.getElementsByTagName("source").item(0);
         Optional<Region> source = Optional.empty();
         if (sourceElement != null) {
-            Element sourceRegionElement = (Element) sourceElement.getElementsByTagName("*").item(0);
+            Element sourceRegionElement =
+                    (Element) sourceElement.getElementsByTagName("*").item(0);
             if (sourceRegionElement != null) {
                 source = Optional.of(RegionFactory.parse(sourceRegionElement));
             }
@@ -176,23 +160,11 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
 
         try {
             WoolObjective wool = new WoolObjective(
-                    match,
-                    name,
-                    team,
-                    DyeColor.valueOf(color.toUpperCase()),
-                    destination,
-                    source,
-                    pickup,
-                    refill
-            );
+                    match, name, team, DyeColor.valueOf(color.toUpperCase()), destination, source, pickup, refill);
             module.addObjective(wool);
         } catch (IllegalArgumentException e) {
             throw new MapParseException(
-                    "Invalid wool color: " + color,
-                    "objectives.wools",
-                    getElementContext(woolElement),
-                    e
-            );
+                    "Invalid wool color: " + color, "objectives.wools", getElementContext(woolElement), e);
         }
     }
 
@@ -210,8 +182,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
             ObjectivesModule module,
             Element teamMonumentsElement,
             Team team,
-            Set<Material> allowedMaterials
-    ) {
+            Set<Material> allowedMaterials) {
         NodeList monuments = teamMonumentsElement.getElementsByTagName("monument");
         for (int j = 0; j < monuments.getLength(); j++) {
             Element monumentElement = (Element) monuments.item(j);
@@ -219,13 +190,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
 
             Region region = RegionFactory.parseRequired(monumentElement, "region");
 
-            MonumentObjective monument = new MonumentObjective(
-                    match,
-                    name,
-                    team,
-                    region,
-                    allowedMaterials
-            );
+            MonumentObjective monument = new MonumentObjective(match, name, team, region, allowedMaterials);
             module.addObjective(monument);
         }
     }

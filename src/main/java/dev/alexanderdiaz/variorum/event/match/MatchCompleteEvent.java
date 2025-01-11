@@ -1,11 +1,10 @@
 package dev.alexanderdiaz.variorum.event.match;
 
 import dev.alexanderdiaz.variorum.match.Match;
+import java.util.Collection;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-
-import java.util.Collection;
 
 @Getter
 public class MatchCompleteEvent extends MatchEvent {

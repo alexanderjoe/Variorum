@@ -14,9 +14,10 @@ public class PlayerChangeTeamEvent extends Event implements Cancellable {
 
     @Getter
     private final Player player;
+
     @Getter
-    @Nullable
-    private final Team fromTeam;
+    @Nullable private final Team fromTeam;
+
     @Getter
     private final Team toTeam;
 

@@ -2,9 +2,8 @@ package dev.alexanderdiaz.variorum.module.results;
 
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
-import org.w3c.dom.Element;
-
 import java.util.Optional;
+import org.w3c.dom.Element;
 
 public class ResultsFactory implements ModuleFactory<ResultsModule> {
     @Override

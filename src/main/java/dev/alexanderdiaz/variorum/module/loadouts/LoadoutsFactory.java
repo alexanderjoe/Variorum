@@ -5,10 +5,9 @@ import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutArmor;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutEffect;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutItem;
+import java.util.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import java.util.*;
 
 public class LoadoutsFactory implements ModuleFactory<LoadoutsModule> {
     @Override
@@ -49,8 +48,7 @@ public class LoadoutsFactory implements ModuleFactory<LoadoutsModule> {
         return new LoadoutArmor(
                 element.getAttribute("material"),
                 Boolean.parseBoolean(element.getAttribute("team-color")),
-                Boolean.parseBoolean(element.getAttribute("unbreakable"))
-        );
+                Boolean.parseBoolean(element.getAttribute("unbreakable")));
     }
 
     private List<LoadoutItem> parseItems(Element parent) {
@@ -84,10 +82,7 @@ public class LoadoutsFactory implements ModuleFactory<LoadoutsModule> {
 
         for (int i = 0; i < effectNodes.getLength(); i++) {
             Element effectElement = (Element) effectNodes.item(i);
-            effects.add(new LoadoutEffect(
-                    effectElement.getTextContent(),
-                    effectElement.getAttribute("duration")
-            ));
+            effects.add(new LoadoutEffect(effectElement.getTextContent(), effectElement.getAttribute("duration")));
         }
 
         return effects;

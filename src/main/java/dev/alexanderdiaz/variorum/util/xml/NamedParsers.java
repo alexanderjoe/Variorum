@@ -2,20 +2,17 @@ package dev.alexanderdiaz.variorum.util.xml;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Map;
+import javax.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.w3c.dom.Element;
 
-import javax.annotation.Nullable;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Map;
-
 /**
- * Utility class for handling named XML parsers using reflection.
- * This class helps manage methods annotated with @NamedParser and provides
- * functionality to invoke them based on XML element names.
+ * Utility class for handling named XML parsers using reflection. This class helps manage methods annotated
+ * with @NamedParser and provides functionality to invoke them based on XML element names.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NamedParsers {
@@ -39,11 +36,8 @@ public final class NamedParsers {
             method.setAccessible(true);
             for (String name : parser.value()) {
                 if (parsers.containsValue(name)) {
-                    throw new IllegalStateException(String.format(
-                            "Duplicate parser name '%s' found in %s",
-                            name,
-                            clazz.getName()
-                    ));
+                    throw new IllegalStateException(
+                            String.format("Duplicate parser name '%s' found in %s", name, clazz.getName()));
                 }
                 parsers.put(method, name);
             }

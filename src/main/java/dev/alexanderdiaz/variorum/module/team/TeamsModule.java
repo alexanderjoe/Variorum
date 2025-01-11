@@ -6,6 +6,7 @@ import dev.alexanderdiaz.variorum.event.team.PlayerTeamScoreboardEvent;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.util.Events;
+import java.util.*;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -17,12 +18,12 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team.OptionStatus;
 
-import java.util.*;
-
 public class TeamsModule implements Module {
     private final Match match;
+
     @Getter
     private final List<Team> teams;
+
     private final Map<UUID, Team> playerTeams = new HashMap<>();
     private TeamListener listener;
     private Scoreboard scoreboard;
@@ -32,9 +33,7 @@ public class TeamsModule implements Module {
     }
 
     public Optional<Team> getTeamById(String id) {
-        return teams.stream()
-                .filter(team -> team.id().equals(id))
-                .findFirst();
+        return teams.stream().filter(team -> team.id().equals(id)).findFirst();
     }
 
     public boolean isSpectator(Player player) {
@@ -90,14 +89,12 @@ public class TeamsModule implements Module {
     }
 
     public boolean canJoinTeam(Team team) {
-        long teamSize = playerTeams.values().stream()
-                .filter(t -> t.equals(team))
-                .count();
+        long teamSize =
+                playerTeams.values().stream().filter(t -> t.equals(team)).count();
 
         long minTeamSize = teams.stream()
-                .mapToLong(t -> playerTeams.values().stream()
-                        .filter(pt -> pt.equals(t))
-                        .count())
+                .mapToLong(t ->
+                        playerTeams.values().stream().filter(pt -> pt.equals(t)).count())
                 .min()
                 .orElse(0);
 
@@ -107,10 +104,9 @@ public class TeamsModule implements Module {
 
     public Team autoAssignTeam(Player player) {
         return teams.stream()
-                .min(Comparator.comparingLong(team ->
-                        playerTeams.values().stream()
-                                .filter(t -> t.equals(team))
-                                .count()))
+                .min(Comparator.comparingLong(team -> playerTeams.values().stream()
+                        .filter(t -> t.equals(team))
+                        .count()))
                 .orElse(null);
     }
 
@@ -143,16 +139,16 @@ public class TeamsModule implements Module {
     private class TeamListener implements Listener {
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-            if (!(event.getEntity() instanceof Player victim) ||
-                    !(event.getDamager() instanceof Player attacker)) {
+            if (!(event.getEntity() instanceof Player victim) || !(event.getDamager() instanceof Player attacker)) {
                 return;
             }
 
             Optional<Team> victimTeam = getPlayerTeam(victim);
             Optional<Team> attackerTeam = getPlayerTeam(attacker);
 
-            if (victimTeam.isPresent() && attackerTeam.isPresent() &&
-                    victimTeam.get().equals(attackerTeam.get())) {
+            if (victimTeam.isPresent()
+                    && attackerTeam.isPresent()
+                    && victimTeam.get().equals(attackerTeam.get())) {
                 event.setCancelled(true);
             }
         }

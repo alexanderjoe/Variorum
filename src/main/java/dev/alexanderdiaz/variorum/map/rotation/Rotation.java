@@ -1,12 +1,13 @@
 package dev.alexanderdiaz.variorum.map.rotation;
 
-import lombok.Getter;
 import java.util.LinkedList;
 import java.util.List;
+import lombok.Getter;
 
 public class Rotation {
     @Getter
     private final LinkedList<String> mapQueue;
+
     private int currentIndex = 0;
 
     public Rotation(List<String> maps) {

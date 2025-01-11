@@ -12,16 +12,15 @@ import dev.alexanderdiaz.variorum.module.state.GameStateModule;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
 import dev.alexanderdiaz.variorum.util.Events;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ResultsModule implements Module {
     private final Match match;
@@ -29,6 +28,7 @@ public class ResultsModule implements Module {
 
     @Getter
     private final Map<Team, TeamResult> teamResults;
+
     private boolean resultDeclared = false;
 
     public ResultsModule(Match match) {
@@ -139,7 +139,6 @@ public class ResultsModule implements Module {
                             .append(Component.text(" objectives completed", NamedTextColor.GRAY))
                             .build());
                 });
-
             });
 
             MatchCompleteEvent mce = new MatchCompleteEvent(match, List.of(), List.of());

@@ -3,10 +3,9 @@ package dev.alexanderdiaz.variorum.module.loadouts;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutArmor;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutEffect;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutItem;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 
 // Data classes for loadout configuration
 @Getter
@@ -19,9 +18,14 @@ public class Loadout {
     private final List<LoadoutItem> items;
     private final List<LoadoutEffect> effects;
 
-    public Loadout(String id, LoadoutArmor helmet, LoadoutArmor chestplate,
-                   LoadoutArmor leggings, LoadoutArmor boots,
-                   List<LoadoutItem> items, List<LoadoutEffect> effects) {
+    public Loadout(
+            String id,
+            LoadoutArmor helmet,
+            LoadoutArmor chestplate,
+            LoadoutArmor leggings,
+            LoadoutArmor boots,
+            List<LoadoutItem> items,
+            List<LoadoutEffect> effects) {
         this.id = id;
         this.helmet = helmet;
         this.chestplate = chestplate;

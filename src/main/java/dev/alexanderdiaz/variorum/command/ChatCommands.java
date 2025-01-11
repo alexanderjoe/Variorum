@@ -4,6 +4,8 @@ import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.chat.ChatModule;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
+import java.util.ArrayList;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
@@ -12,9 +14,6 @@ import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.CommandDescription;
 import org.incendo.cloud.annotations.suggestion.Suggestions;
 import org.incendo.cloud.context.CommandContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ChatCommands {
     private final Variorum plugin;
@@ -27,8 +26,7 @@ public class ChatCommands {
     @CommandDescription("Switch to a specific chat channel")
     public void switchChannel(
             final Player player,
-            final @Argument(value = "channel", suggestions = "channelSuggestions") String channelName
-    ) {
+            final @Argument(value = "channel", suggestions = "channelSuggestions") String channelName) {
         Match match = Variorum.getMatch();
         if (match == null) {
             player.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
@@ -41,8 +39,7 @@ public class ChatCommands {
                     .findFirst()
                     .ifPresentOrElse(
                             channel -> chatModule.setPlayerChannel(player, channel),
-                            () -> player.sendMessage(Component.text("Channel not found!", NamedTextColor.RED))
-                    );
+                            () -> player.sendMessage(Component.text("Channel not found!", NamedTextColor.RED)));
         });
     }
 
@@ -73,15 +70,16 @@ public class ChatCommands {
         }
 
         match.getModule(TeamsModule.class).ifPresent(teamsModule -> {
-            teamsModule.getPlayerTeam(player).ifPresentOrElse(
-                    team -> match.getModule(ChatModule.class).ifPresent(chatModule -> {
-                        chatModule.getChannels().stream()
-                                .filter(channel -> channel.getName().equalsIgnoreCase("Team " + team.name()))
-                                .findFirst()
-                                .ifPresent(channel -> chatModule.setPlayerChannel(player, channel));
-                    }),
-                    () -> player.sendMessage(Component.text("You are not in a team!", NamedTextColor.RED))
-            );
+            teamsModule
+                    .getPlayerTeam(player)
+                    .ifPresentOrElse(
+                            team -> match.getModule(ChatModule.class).ifPresent(chatModule -> {
+                                chatModule.getChannels().stream()
+                                        .filter(channel -> channel.getName().equalsIgnoreCase("Team " + team.name()))
+                                        .findFirst()
+                                        .ifPresent(channel -> chatModule.setPlayerChannel(player, channel));
+                            }),
+                            () -> player.sendMessage(Component.text("You are not in a team!", NamedTextColor.RED)));
         });
     }
 
@@ -95,15 +93,20 @@ public class ChatCommands {
         }
 
         match.getModule(ChatModule.class).ifPresent(chatModule -> {
-            chatModule.getPlayerChannel(player).ifPresentOrElse(
-                    channel -> {
-                        player.sendMessage(Component.text("Current channel: " + channel.getName(), NamedTextColor.YELLOW));
-                        player.sendMessage(Component.text("Available channels:", NamedTextColor.YELLOW));
-                        chatModule.getChannels().forEach(ch ->
-                                player.sendMessage(Component.text("- " + ch.getName(), NamedTextColor.GRAY)));
-                    },
-                    () -> player.sendMessage(Component.text("You are not in any channel!", NamedTextColor.RED))
-            );
+            chatModule
+                    .getPlayerChannel(player)
+                    .ifPresentOrElse(
+                            channel -> {
+                                player.sendMessage(
+                                        Component.text("Current channel: " + channel.getName(), NamedTextColor.YELLOW));
+                                player.sendMessage(Component.text("Available channels:", NamedTextColor.YELLOW));
+                                chatModule
+                                        .getChannels()
+                                        .forEach(ch -> player.sendMessage(
+                                                Component.text("- " + ch.getName(), NamedTextColor.GRAY)));
+                            },
+                            () -> player.sendMessage(
+                                    Component.text("You are not in any channel!", NamedTextColor.RED)));
         });
     }
 

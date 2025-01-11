@@ -5,17 +5,16 @@ import dev.alexanderdiaz.variorum.listener.VariorumListener;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.match.MatchManager;
 import dev.alexanderdiaz.variorum.util.Events;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Level;
+import javax.annotation.Nullable;
 import lombok.Getter;
 import net.megavex.scoreboardlibrary.api.ScoreboardLibrary;
 import net.megavex.scoreboardlibrary.api.exception.NoPacketAdapterAvailableException;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.logging.Level;
 
 public final class Variorum extends JavaPlugin {
     private static Variorum instance;
@@ -31,8 +30,7 @@ public final class Variorum extends JavaPlugin {
         return instance;
     }
 
-    @Nullable
-    public static Match getMatch() {
+    @Nullable public static Match getMatch() {
         return get().getMatchManager().getCurrentMatch();
     }
 
@@ -53,9 +51,14 @@ public final class Variorum extends JavaPlugin {
         // Listeners
         Events.register(new VariorumListener());
 
-        getServer().getScheduler().runTaskLater(get(), () -> {
-            matchManager.cycleToNextMatch();
-        }, 20);
+        getServer()
+                .getScheduler()
+                .runTaskLater(
+                        get(),
+                        () -> {
+                            matchManager.cycleToNextMatch();
+                        },
+                        20);
 
         try {
             scoreboardLibrary = ScoreboardLibrary.loadScoreboardLibrary(instance);
@@ -100,16 +103,14 @@ public final class Variorum extends JavaPlugin {
 
             System.gc();
 
-            Files.walk(matchesPath)
-                    .sorted((a, b) -> -a.compareTo(b))
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                            getLogger().fine("Deleted: " + path);
-                        } catch (IOException e) {
-                            getLogger().warning("Failed to delete: " + path + " - " + e.getMessage());
-                        }
-                    });
+            Files.walk(matchesPath).sorted((a, b) -> -a.compareTo(b)).forEach(path -> {
+                try {
+                    Files.delete(path);
+                    getLogger().fine("Deleted: " + path);
+                } catch (IOException e) {
+                    getLogger().warning("Failed to delete: " + path + " - " + e.getMessage());
+                }
+            });
 
             Files.createDirectories(matchesPath);
             getLogger().info("Cleaned up matches directory");

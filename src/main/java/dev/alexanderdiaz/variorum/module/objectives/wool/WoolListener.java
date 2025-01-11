@@ -21,16 +21,14 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-/**
- * Handles listening for events related to the wool objective.
- */
+/** Handles listening for events related to the wool objective. */
 @RequiredArgsConstructor
 public class WoolListener implements Listener {
     private final ObjectivesModule module;
 
     /**
-     * This should handle checking if a player has touched a wool that is part of
-     * their wools objective by means of checking if it enters their inventory.
+     * This should handle checking if a player has touched a wool that is part of their wools objective by means of
+     * checking if it enters their inventory.
      *
      * @param event The event we are listening for.
      */
@@ -51,16 +49,18 @@ public class WoolListener implements Listener {
                             .map(team -> team.equals(wool.getTeam().get()))
                             .orElse(false);
 
-                    if (isOnTeam && (!wool.getSource().isPresent() ||
-                            wool.getSource().get().contains(event.getItem().getLocation()))) {
+                    if (isOnTeam
+                            && (!wool.getSource().isPresent()
+                                    || wool.getSource()
+                                            .get()
+                                            .contains(event.getItem().getLocation()))) {
                         Events.call(new WoolPickupEvent(module.getMatch(), wool, player));
                     }
                 });
     }
 
     /**
-     * This should handle checking if a player has placed a wool at a wool destination
-     * and completed the objective.
+     * This should handle checking if a player has placed a wool at a wool destination and completed the objective.
      *
      * @param event The event we are listening for.
      */
@@ -80,17 +80,23 @@ public class WoolListener implements Listener {
                 event.setCancelled(true);
 
                 Player player = event.getPlayer();
-                Team team = this.module.getMatch().getRequiredModule(TeamsModule.class).getPlayerTeam(player).orElse(null);
+                Team team = this.module
+                        .getMatch()
+                        .getRequiredModule(TeamsModule.class)
+                        .getPlayerTeam(player)
+                        .orElse(null);
 
                 if (team == null) return;
 
                 if (!wool.canComplete(team)) {
-                    player.sendMessage(Component.text("You are not allowed to complete this objective!", NamedTextColor.RED));
+                    player.sendMessage(
+                            Component.text("You are not allowed to complete this objective!", NamedTextColor.RED));
                     break;
                 }
 
                 if (!wool.isValidBlock(block.getType())) {
-                    player.sendMessage(Component.text("This is not the correct wool for this location!", NamedTextColor.RED));
+                    player.sendMessage(
+                            Component.text("This is not the correct wool for this location!", NamedTextColor.RED));
                     break;
                 }
 
@@ -103,8 +109,8 @@ public class WoolListener implements Listener {
     }
 
     /**
-     * This should handle checking for when a player closes an inventory, checking
-     * if the inventory is at a source location and refill is turned on.
+     * This should handle checking for when a player closes an inventory, checking if the inventory is at a source
+     * location and refill is turned on.
      *
      * @param event The event we are listening for.
      */

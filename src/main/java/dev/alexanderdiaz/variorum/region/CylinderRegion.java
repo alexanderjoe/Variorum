@@ -5,9 +5,12 @@ import org.bukkit.util.Vector;
 
 public class CylinderRegion extends AbstractRegion {
     private final Vector center;
+
     @Getter
     private final double radius;
+
     private final double radiusSquared;
+
     @Getter
     private final double height;
 

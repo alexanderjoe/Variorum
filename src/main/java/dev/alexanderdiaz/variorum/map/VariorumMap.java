@@ -1,10 +1,8 @@
 package dev.alexanderdiaz.variorum.map;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-
-import java.util.List;
 
 @Data
 @Builder

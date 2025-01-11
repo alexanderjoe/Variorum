@@ -5,20 +5,22 @@ import dev.alexanderdiaz.variorum.module.objectives.Objective;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.region.Region;
 import dev.alexanderdiaz.variorum.util.Events;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class MonumentObjective implements Objective {
     private final Match match;
     private final String name;
+
     @Getter
     private final Team owner;
+
     @Getter
     private final Region region;
+
     private final Set<Material> materials;
     private boolean broken = false;
 

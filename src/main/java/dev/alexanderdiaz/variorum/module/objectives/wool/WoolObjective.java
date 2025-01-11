@@ -7,6 +7,7 @@ import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
 import dev.alexanderdiaz.variorum.region.Region;
 import dev.alexanderdiaz.variorum.util.Colors;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.ToString;
 import net.kyori.adventure.text.Component;
@@ -16,8 +17,6 @@ import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-
-import java.util.Optional;
 
 @Getter
 @ToString(exclude = "match")
@@ -32,7 +31,15 @@ public class WoolObjective implements Objective {
     private boolean refill;
     private boolean placed = false;
 
-    public WoolObjective(Match match, String name, Optional<Team> team, DyeColor color, Region destination, Optional<Region> source, boolean pickup, boolean refill) {
+    public WoolObjective(
+            Match match,
+            String name,
+            Optional<Team> team,
+            DyeColor color,
+            Region destination,
+            Optional<Region> source,
+            boolean pickup,
+            boolean refill) {
         this.match = match;
         this.name = name;
         this.team = team;
@@ -44,14 +51,10 @@ public class WoolObjective implements Objective {
     }
 
     @Override
-    public void enable() {
-
-    }
+    public void enable() {}
 
     @Override
-    public void disable() {
-
-    }
+    public void disable() {}
 
     @Override
     public String getName() {
@@ -67,7 +70,10 @@ public class WoolObjective implements Objective {
         Preconditions.checkArgument(!this.placed, "wool already placed");
         this.placed = true;
 
-        Team team = this.match.getRequiredModule(TeamsModule.class).getPlayerTeam(player).orElse(null);
+        Team team = this.match
+                .getRequiredModule(TeamsModule.class)
+                .getPlayerTeam(player)
+                .orElse(null);
         if (team == null) {
             throw new IllegalStateException("team not found");
         }

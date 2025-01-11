@@ -7,11 +7,10 @@ import dev.alexanderdiaz.variorum.module.objectives.monument.MonumentObjective;
 import dev.alexanderdiaz.variorum.module.objectives.wool.WoolListener;
 import dev.alexanderdiaz.variorum.module.objectives.wool.WoolObjective;
 import dev.alexanderdiaz.variorum.util.Events;
-import lombok.Getter;
-import org.bukkit.event.Listener;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import org.bukkit.event.Listener;
 
 @Getter
 public class ObjectivesModule implements Module {

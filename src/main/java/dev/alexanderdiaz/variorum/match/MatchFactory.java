@@ -12,19 +12,19 @@ import dev.alexanderdiaz.variorum.module.scoreboard.ScoreboardFactory;
 import dev.alexanderdiaz.variorum.module.spawn.SpawnFactory;
 import dev.alexanderdiaz.variorum.module.state.GameStateFactory;
 import dev.alexanderdiaz.variorum.module.team.TeamsModuleFactory;
+import java.io.File;
+import java.util.*;
+import java.util.logging.Level;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.Getter;
 import org.bukkit.World;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.util.*;
-import java.util.logging.Level;
-
 public class MatchFactory {
     private final Map<Class<? extends ModuleFactory<?>>, ModuleFactory<?>> factories;
+
     @Getter
     private List<ModuleFactory<?>> orderedFactories;
 
@@ -84,12 +84,23 @@ public class MatchFactory {
                 Optional<?> module = moduleFactory.build(match, root);
                 if (module.isPresent()) {
                     match.addModule((Module) module.get());
-                    Variorum.get().getLogger().info("Added module: " + module.get().getClass().getSimpleName());
+                    Variorum.get()
+                            .getLogger()
+                            .info("Added module: " + module.get().getClass().getSimpleName());
                 } else {
-                    Variorum.get().getLogger().info("Module factory " + moduleFactory.getClass().getSimpleName() + " did not create a module");
+                    Variorum.get()
+                            .getLogger()
+                            .info("Module factory " + moduleFactory.getClass().getSimpleName()
+                                    + " did not create a module");
                 }
             } catch (Exception e) {
-                Variorum.get().getLogger().log(Level.SEVERE, "Failed to build module using " + moduleFactory.getClass().getName(), e);
+                Variorum.get()
+                        .getLogger()
+                        .log(
+                                Level.SEVERE,
+                                "Failed to build module using "
+                                        + moduleFactory.getClass().getName(),
+                                e);
             }
         }
 

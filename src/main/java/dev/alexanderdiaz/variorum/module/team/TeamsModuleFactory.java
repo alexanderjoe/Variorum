@@ -2,12 +2,11 @@ package dev.alexanderdiaz.variorum.module.team;
 
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class TeamsModuleFactory implements ModuleFactory<TeamsModule> {
     @Override

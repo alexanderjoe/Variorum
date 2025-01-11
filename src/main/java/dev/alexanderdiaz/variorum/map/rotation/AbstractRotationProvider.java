@@ -2,7 +2,6 @@ package dev.alexanderdiaz.variorum.map.rotation;
 
 import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.match.MatchFactory;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

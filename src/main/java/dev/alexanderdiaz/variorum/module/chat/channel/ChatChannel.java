@@ -1,8 +1,7 @@
 package dev.alexanderdiaz.variorum.module.chat.channel;
 
-import org.bukkit.entity.Player;
-
 import java.util.Collection;
+import org.bukkit.entity.Player;
 
 public interface ChatChannel {
     String getName();

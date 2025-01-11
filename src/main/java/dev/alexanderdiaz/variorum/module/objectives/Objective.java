@@ -3,19 +3,13 @@ package dev.alexanderdiaz.variorum.module.objectives;
 import dev.alexanderdiaz.variorum.module.team.Team;
 
 public interface Objective {
-    /**
-     * Called when the objective should be enabled
-     */
+    /** Called when the objective should be enabled */
     void enable();
 
-    /**
-     * Called when the objective should be disabled
-     */
+    /** Called when the objective should be disabled */
     void disable();
 
-    /**
-     * Gets the name of this objective
-     */
+    /** Gets the name of this objective */
     String getName();
 
     /**
@@ -26,8 +20,6 @@ public interface Objective {
      */
     boolean canComplete(Team team);
 
-    /**
-     * Check if the objective is completed
-     */
+    /** Check if the objective is completed */
     boolean isCompleted();
 }

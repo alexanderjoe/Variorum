@@ -6,6 +6,7 @@ import dev.alexanderdiaz.variorum.module.state.GameState;
 import dev.alexanderdiaz.variorum.module.state.GameStateModule;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
@@ -14,8 +15,6 @@ import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.CommandDescription;
 import org.incendo.cloud.annotations.suggestion.Suggestions;
 import org.incendo.cloud.context.CommandContext;
-
-import java.util.List;
 
 public class TeamCommands {
     private final Variorum plugin;
@@ -27,9 +26,7 @@ public class TeamCommands {
     @Command("join <team>")
     @CommandDescription("Join a specific team")
     public void joinTeam(
-            final Player player,
-            final @Argument(value = "team", suggestions = "availableTeams") String teamId
-    ) {
+            final Player player, final @Argument(value = "team", suggestions = "availableTeams") String teamId) {
         Match match = Variorum.getMatch();
         if (match == null) {
             player.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
@@ -61,7 +58,9 @@ public class TeamCommands {
             return;
         }
 
-        player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW).append(Component.text(to.name(), to.textColor())).append(Component.text(" team.", NamedTextColor.YELLOW)));
+        player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW)
+                .append(Component.text(to.name(), to.textColor()))
+                .append(Component.text(" team.", NamedTextColor.YELLOW)));
         teamsModule.setPlayerTeam(player, to);
     }
 
@@ -95,7 +94,9 @@ public class TeamCommands {
             return;
         }
 
-        player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW).append(Component.text(autoTeam.name(), autoTeam.textColor())).append(Component.text(" team.", NamedTextColor.YELLOW)));
+        player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW)
+                .append(Component.text(autoTeam.name(), autoTeam.textColor()))
+                .append(Component.text(" team.", NamedTextColor.YELLOW)));
         teamsModule.setPlayerTeam(player, autoTeam);
     }
 

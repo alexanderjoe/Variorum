@@ -42,7 +42,7 @@ public class SpawnListener implements Listener {
     public void onPlayerChangeTeam(PlayerChangeTeamEvent event) {
         GameStateModule gameState = module.getMatch().getRequiredModule(GameStateModule.class);
 
-        if(event.getToTeam() == null) {
+        if (event.getToTeam() == null) {
             return;
         }
 

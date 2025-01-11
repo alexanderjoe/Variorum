@@ -6,6 +6,11 @@ import dev.alexanderdiaz.variorum.event.match.MatchOpenEvent;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.util.Events;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.logging.Level;
 import lombok.Getter;
 import lombok.ToString;
 import net.kyori.adventure.text.Component;
@@ -13,18 +18,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.logging.Level;
-
 @ToString
 public class Match {
     @Getter
     private final VariorumMap map;
+
     @Getter
     private final World world;
+
     @Getter
     private boolean active = true;
 
@@ -46,7 +47,7 @@ public class Match {
      * Adds a module to the match.
      *
      * @param module The module to add
-     * @param <T>    The type of module
+     * @param <T> The type of module
      * @return The added module
      */
     public <T extends Module> T addModule(T module) {
@@ -59,7 +60,7 @@ public class Match {
      * Gets a module by its class.
      *
      * @param clazz The class of the module
-     * @param <T>   The type of module
+     * @param <T> The type of module
      * @return The module if present
      */
     @SuppressWarnings("unchecked")
@@ -73,9 +74,7 @@ public class Match {
         return module.get();
     }
 
-    /**
-     * Starts the match and enables all modules.
-     */
+    /** Starts the match and enables all modules. */
     public void start() {
         if (!active) return;
 
@@ -83,7 +82,12 @@ public class Match {
             try {
                 module.enable();
             } catch (Exception e) {
-                Variorum.get().getLogger().log(Level.SEVERE, "Failed to enable module " + module.getClass().getSimpleName(), e);
+                Variorum.get()
+                        .getLogger()
+                        .log(
+                                Level.SEVERE,
+                                "Failed to enable module " + module.getClass().getSimpleName(),
+                                e);
             }
         }
 
@@ -91,9 +95,7 @@ public class Match {
         Events.call(moe);
     }
 
-    /**
-     * Ends the match, disables all modules, and cleans up resources.
-     */
+    /** Ends the match, disables all modules, and cleans up resources. */
     public void end() {
         if (!active) return;
         active = false;
@@ -103,29 +105,32 @@ public class Match {
             try {
                 module.disable();
             } catch (Exception e) {
-                Variorum.get().getLogger().log(Level.SEVERE, "Failed to disable module " + module.getClass().getSimpleName(), e);
+                Variorum.get()
+                        .getLogger()
+                        .log(
+                                Level.SEVERE,
+                                "Failed to disable module " + module.getClass().getSimpleName(),
+                                e);
             }
         }
 
         modules.clear();
         orderedModules.clear();
 
-        world.getPlayers().forEach(player ->
-                player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation()));
+        world.getPlayers()
+                .forEach(player -> player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation()));
 
         Bukkit.unloadWorld(world, false);
 
         try {
             Path worldPath = world.getWorldFolder().toPath();
-            Files.walk(worldPath)
-                    .sorted((a, b) -> -a.compareTo(b))
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            Variorum.get().getLogger().log(Level.WARNING, "Failed to delete: " + path, e);
-                        }
-                    });
+            Files.walk(worldPath).sorted((a, b) -> -a.compareTo(b)).forEach(path -> {
+                try {
+                    Files.delete(path);
+                } catch (IOException e) {
+                    Variorum.get().getLogger().log(Level.WARNING, "Failed to delete: " + path, e);
+                }
+            });
         } catch (IOException e) {
             Variorum.get().getLogger().log(Level.SEVERE, "Failed to clean up world files", e);
         }

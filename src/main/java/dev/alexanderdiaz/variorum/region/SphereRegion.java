@@ -5,8 +5,10 @@ import org.bukkit.util.Vector;
 
 public class SphereRegion extends AbstractRegion {
     private final Vector center;
+
     @Getter
     private final double radius;
+
     private final double radiusSquared;
 
     public SphereRegion(Vector center, double radius) {

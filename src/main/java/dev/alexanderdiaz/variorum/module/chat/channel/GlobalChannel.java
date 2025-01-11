@@ -1,11 +1,10 @@
 package dev.alexanderdiaz.variorum.module.chat.channel;
 
 import dev.alexanderdiaz.variorum.Variorum;
+import java.util.Collection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
-
-import java.util.Collection;
 
 public class GlobalChannel implements ChatChannel {
     @Override

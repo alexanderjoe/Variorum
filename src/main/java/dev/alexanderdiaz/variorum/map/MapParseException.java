@@ -43,5 +43,4 @@ public class MapParseException extends RuntimeException {
 
         return message.toString();
     }
-
 }

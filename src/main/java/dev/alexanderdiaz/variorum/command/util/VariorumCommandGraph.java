@@ -27,12 +27,8 @@ public class VariorumCommandGraph extends CommandGraph<Variorum> {
     }
 
     @Override
-    protected void setupInjectors() {
-
-    }
+    protected void setupInjectors() {}
 
     @Override
-    protected void setupParsers() {
-
-    }
+    protected void setupParsers() {}
 }

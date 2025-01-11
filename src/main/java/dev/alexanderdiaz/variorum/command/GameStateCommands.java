@@ -4,6 +4,8 @@ import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.state.GameState;
 import dev.alexanderdiaz.variorum.module.state.GameStateModule;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
@@ -11,9 +13,6 @@ import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.CommandDescription;
 import org.incendo.cloud.annotations.Permission;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class GameStateCommands {
     private final Variorum plugin;
@@ -25,10 +24,7 @@ public class GameStateCommands {
     @Command("start [time]")
     @CommandDescription("Force start the match with optional countdown time")
     @Permission("variorum.command.start")
-    public void startMatch(
-            final CommandSender sender,
-            final @Argument(value = "time") String timeStr
-    ) {
+    public void startMatch(final CommandSender sender, final @Argument(value = "time") String timeStr) {
         Match match = Variorum.getMatch();
         if (match == null) {
             sender.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
@@ -45,13 +41,13 @@ public class GameStateCommands {
             switch (stateModule.getCurrentState()) {
                 case WAITING:
                     stateModule.startCountdown(seconds);
-                    sender.sendMessage(Component.text("Starting match countdown with " + seconds + " seconds",
-                            NamedTextColor.GREEN));
+                    sender.sendMessage(Component.text(
+                            "Starting match countdown with " + seconds + " seconds", NamedTextColor.GREEN));
                     break;
                 case COUNTDOWN:
                     stateModule.startCountdown(seconds);
-                    sender.sendMessage(Component.text("Restarting countdown with " + seconds + " seconds",
-                            NamedTextColor.GREEN));
+                    sender.sendMessage(
+                            Component.text("Restarting countdown with " + seconds + " seconds", NamedTextColor.GREEN));
                     break;
                 case PLAYING:
                     sender.sendMessage(Component.text("Match is already in progress!", NamedTextColor.RED));

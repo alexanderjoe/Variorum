@@ -1,12 +1,11 @@
 package dev.alexanderdiaz.variorum.region;
 
+import java.util.Collections;
+import java.util.Set;
 import lombok.Getter;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
-
-import java.util.Collections;
-import java.util.Set;
 
 public class BlockRegion extends AbstractRegion {
     @Getter
@@ -25,11 +24,8 @@ public class BlockRegion extends AbstractRegion {
 
     @Override
     public Set<Block> getBlocks(World world) {
-        return Collections.singleton(world.getBlockAt(
-                position.getBlockX(),
-                position.getBlockY(),
-                position.getBlockZ()
-        ));
+        return Collections.singleton(
+                world.getBlockAt(position.getBlockX(), position.getBlockY(), position.getBlockZ()));
     }
 
     @Override

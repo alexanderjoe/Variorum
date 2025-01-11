@@ -5,8 +5,10 @@ import org.bukkit.util.Vector;
 
 public class CircleRegion extends AbstractRegion {
     private final Vector center;
+
     @Getter
     private final double radius;
+
     private final double radiusSquared;
 
     public CircleRegion(Vector center, double radius) {
@@ -41,4 +43,3 @@ public class CircleRegion extends AbstractRegion {
         return center.clone();
     }
 }
-

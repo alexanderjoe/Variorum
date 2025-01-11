@@ -1,17 +1,16 @@
 package dev.alexanderdiaz.variorum.map;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VariorumMapFactory {
@@ -50,11 +49,7 @@ public class VariorumMapFactory {
         Element mapElement = doc.getDocumentElement();
 
         if (!"map".equals(mapElement.getTagName())) {
-            throw new MapParseException(
-                    "Root element must be <map>",
-                    "document",
-                    getElementContext(mapElement)
-            );
+            throw new MapParseException("Root element must be <map>", "document", getElementContext(mapElement));
         }
 
         VariorumMap.VariorumMapBuilder builder = VariorumMap.builder();
@@ -86,11 +81,7 @@ public class VariorumMapFactory {
             throw e;
         } catch (Exception e) {
             throw new MapParseException(
-                    "Failed to create map from document",
-                    "document",
-                    getElementContext(mapElement),
-                    e
-            );
+                    "Failed to create map from document", "document", getElementContext(mapElement), e);
         }
     }
 
@@ -129,8 +120,7 @@ public class VariorumMapFactory {
                         "Failed to parse team at index " + i,
                         "teams",
                         getElementContext((Element) teamNodes.item(i)),
-                        e
-                );
+                        e);
             }
         }
         return teams;
@@ -142,47 +132,34 @@ public class VariorumMapFactory {
         try {
             return VariorumMap.Spawns.builder()
                     .defaultSpawn(createSpawnRegion(
-                            getRequiredElement(spawnsElement, "default", "spawns", "Default spawn must be defined")
-                    ))
+                            getRequiredElement(spawnsElement, "default", "spawns", "Default spawn must be defined")))
                     .teamSpawns(createTeamSpawns(spawnsElement))
                     .build();
         } catch (MapParseException e) {
             throw e;
         } catch (Exception e) {
             throw new MapParseException(
-                    "Failed to parse spawns section",
-                    "spawns",
-                    getElementContext(spawnsElement),
-                    e
-            );
+                    "Failed to parse spawns section", "spawns", getElementContext(spawnsElement), e);
         }
     }
 
     private static VariorumMap.Spawns.SpawnRegion createSpawnRegion(Element element) {
         try {
-            Element regionsElement = getRequiredElement(element, "regions", "spawns", "Spawn must have regions defined");
+            Element regionsElement =
+                    getRequiredElement(element, "regions", "spawns", "Spawn must have regions defined");
             String loadout = element.getAttribute("loadout");
 
             return VariorumMap.Spawns.SpawnRegion.builder()
                     .yaw(Double.parseDouble(regionsElement.getAttribute("yaw")))
                     .point(VariorumMap.Point.fromString(
-                            getRequiredElement(regionsElement, "point", "spawns", "Spawn region must have a point").getTextContent()))
+                            getRequiredElement(regionsElement, "point", "spawns", "Spawn region must have a point")
+                                    .getTextContent()))
                     .loadout(loadout.isEmpty() ? null : loadout)
                     .build();
         } catch (NumberFormatException e) {
-            throw new MapParseException(
-                    "Invalid yaw value",
-                    "spawns",
-                    getElementContext(element),
-                    e
-            );
+            throw new MapParseException("Invalid yaw value", "spawns", getElementContext(element), e);
         } catch (IllegalArgumentException e) {
-            throw new MapParseException(
-                    "Invalid point format",
-                    "spawns",
-                    getElementContext(element),
-                    e
-            );
+            throw new MapParseException("Invalid point format", "spawns", getElementContext(element), e);
         }
     }
 
@@ -209,8 +186,11 @@ public class VariorumMapFactory {
             if (element.hasAttributes()) {
                 for (int i = 0; i < element.getAttributes().getLength(); i++) {
                     var attr = element.getAttributes().item(i);
-                    context.append(" ").append(attr.getNodeName())
-                            .append("=\"").append(attr.getNodeValue()).append("\"");
+                    context.append(" ")
+                            .append(attr.getNodeName())
+                            .append("=\"")
+                            .append(attr.getNodeValue())
+                            .append("\"");
                 }
             }
 
@@ -231,11 +211,7 @@ public class VariorumMapFactory {
             return (MapParseException) e;
         }
         return new MapParseException(
-                "Failed to parse " + section + " section: " + e.getMessage(),
-                section,
-                getElementContext(context),
-                e
-        );
+                "Failed to parse " + section + " section: " + e.getMessage(), section, getElementContext(context), e);
     }
 
     private static String getRequiredAttribute(Element element, String attribute, String section) {
@@ -244,8 +220,7 @@ public class VariorumMapFactory {
             throw new MapParseException(
                     "Required attribute '" + attribute + "' missing from element: " + element.getTagName(),
                     section,
-                    getElementContext(element)
-            );
+                    getElementContext(element));
         }
         return value;
     }
@@ -253,11 +228,7 @@ public class VariorumMapFactory {
     private static Element getRequiredElement(Element parent, String tagName, String section, String message) {
         Element element = (Element) parent.getElementsByTagName(tagName).item(0);
         if (element == null) {
-            throw new MapParseException(
-                    message,
-                    section,
-                    getElementContext(parent)
-            );
+            throw new MapParseException(message, section, getElementContext(parent));
         }
         return element;
     }

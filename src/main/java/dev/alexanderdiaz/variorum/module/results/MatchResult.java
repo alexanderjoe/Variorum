@@ -1,10 +1,9 @@
 package dev.alexanderdiaz.variorum.module.results;
 
 import dev.alexanderdiaz.variorum.module.team.Team;
-import lombok.Getter;
-
 import java.util.Map;
 import java.util.Optional;
+import lombok.Getter;
 
 @Getter
 public class MatchResult {
