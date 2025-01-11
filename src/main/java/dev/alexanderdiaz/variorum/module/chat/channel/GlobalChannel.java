@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 import java.util.Collection;
 
-// Global chat implementation
 public class GlobalChannel implements ChatChannel {
     @Override
     public String getName() {
@@ -24,6 +23,7 @@ public class GlobalChannel implements ChatChannel {
                 .build();
 
         getRecipients(sender).forEach(player -> player.sendMessage(formatted));
+        Variorum.get().getServer().getConsoleSender().sendMessage(formatted);
     }
 
     @Override

@@ -27,7 +27,6 @@ public class MonumentListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
 
-        // Find the monument this block belongs to
         Optional<MonumentObjective> monument = module.getObjectives().stream()
                 .filter(obj -> obj instanceof MonumentObjective)
                 .map(obj -> (MonumentObjective) obj)
@@ -53,23 +52,19 @@ public class MonumentListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        // Get the player's team
-        TeamsModule teamsModule = Variorum.getMatch().getRequiredModule(TeamsModule.class);
-        Team playerTeam = teamsModule.getPlayerTeam(player).orElse(null);
+        Team team = this.module.getMatch().getRequiredModule(TeamsModule.class).getPlayerTeam(player).orElse(null);
 
-        if (playerTeam == null) {
+        if (team == null) {
             return;
         }
 
-        // Players can't break their own monuments
-        if (playerTeam.equals(objective.getOwner())) {
+        if (!objective.canComplete(team)) {
             player.sendMessage(Component.text("You cannot break your own monuments!", NamedTextColor.RED));
             return;
         }
 
         block.setType(Material.AIR);
 
-        // Mark monument as broken and broadcast
         objective.markBroken();
 
         Component message = Component.text()
@@ -79,16 +74,13 @@ public class MonumentListener implements Listener {
                 .append(Component.text("!", NamedTextColor.GRAY))
                 .build();
 
-        Variorum.getMatch().getWorld().getPlayers()
-                .forEach(p -> p.sendMessage(message));
-
+        this.module.getMatch().broadcast(message);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
 
-        // Check if block is in any monument region
         boolean isMonumentBlock = module.getObjectives().stream()
                 .filter(obj -> obj instanceof MonumentObjective)
                 .map(obj -> (MonumentObjective) obj)

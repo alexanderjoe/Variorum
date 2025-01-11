@@ -55,30 +55,35 @@ public final class NamedParsers {
     /**
      * Invokes the appropriate parser method for a given XML element.
      *
-     * @param parsers Map of parser objects, methods, and their associated names
+     * @param instance The instance that contains the parser methods
      * @param element The XML element to parse
      * @param errorMessage Error message to use if no parser is found
-     * @param args Arguments to pass to the parser method
+     * @param args Additional arguments to pass to the parser method
      * @param <T> Expected return type of the parser
      * @return The parsed result
      * @throws IllegalArgumentException if no parser is found or parsing fails
      */
     @SuppressWarnings("unchecked")
     public static <T> T invoke(
-            Table<Object, Method, Collection<String>> parsers,
+            Object instance,
+            Map<Method, Collection<String>> parsers,
             Element element,
             String errorMessage,
             Object... args) {
 
-        for (Table.Cell<Object, Method, Collection<String>> cell : parsers.cellSet()) {
-            if (!cell.getValue().contains(element.getTagName())) {
+        Object[] fullArgs = new Object[args.length + 1];
+        fullArgs[0] = element;
+        System.arraycopy(args, 0, fullArgs, 1, args.length);
+
+        for (Map.Entry<Method, Collection<String>> entry : parsers.entrySet()) {
+            if (!entry.getValue().contains(element.getTagName())) {
                 continue;
             }
 
             try {
-                return (T) cell.getColumnKey().invoke(cell.getRowKey(), args);
+                return (T) entry.getKey().invoke(instance, fullArgs);
             } catch (Exception e) {
-                throw new IllegalArgumentException("Failed to parse element: " + element.getTagName(), e);
+                throw new IllegalArgumentException("Failed to invoke parser for " + element.getTagName(), e);
             }
         }
 

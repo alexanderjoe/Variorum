@@ -1,7 +1,5 @@
 package dev.alexanderdiaz.variorum.region;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.util.xml.NamedParser;
 import dev.alexanderdiaz.variorum.util.xml.NamedParsers;
@@ -11,15 +9,11 @@ import org.w3c.dom.Element;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 public class RegionFactory {
-    private static final Table<Object, Method, Collection<String>> PARSERS = HashBasedTable.create();
-
-    static {
-        // Register all parser methods from this class
-        Map<Method, Collection<String>> methods = NamedParsers.getMethods(RegionFactory.class);
-        methods.forEach((method, names) -> PARSERS.put(RegionFactory.class, method, names));
-    }
+    private static final Map<Method, Collection<String>> PARSERS = NamedParsers.getMethods(RegionFactory.class);
+    private static final RegionFactory INSTANCE = new RegionFactory();
 
     /**
      * Parses a region from an XML element if it exists.
@@ -29,7 +23,6 @@ public class RegionFactory {
      * @throws IllegalArgumentException if the region type is unknown
      */
     public static Region parse(Element element) {
-        // Special case for nested region elements
         if (element.getTagName().equals("region")) {
             Element blockElement = (Element) element.getElementsByTagName("block").item(0);
             if (blockElement != null) {
@@ -38,6 +31,7 @@ public class RegionFactory {
         }
 
         return NamedParsers.invoke(
+                INSTANCE,
                 PARSERS,
                 element,
                 "Unknown region type: " + element.getTagName()
@@ -48,7 +42,7 @@ public class RegionFactory {
      * Parses a region from an XML element, throwing an exception if the element doesn't exist.
      *
      * @param parent The parent element containing the region
-     * @param name The name of the region element to look for
+     * @param name   The name of the region element to look for
      * @return The parsed Region
      * @throws IllegalArgumentException if the region element is missing or invalid
      */
@@ -58,6 +52,14 @@ public class RegionFactory {
             throw new IllegalArgumentException("Required region element '" + name + "' not found");
         }
         return parse(element);
+    }
+
+    public static Optional<Region> parseChild(Element parent, String name) {
+        Element element = (Element) parent.getElementsByTagName(name).item(0);
+        if (element == null) {
+            return Optional.empty();
+        }
+        return Optional.of(parse(element));
     }
 
     @NamedParser("block")

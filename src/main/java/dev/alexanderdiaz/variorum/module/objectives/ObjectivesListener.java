@@ -1,6 +1,5 @@
 package dev.alexanderdiaz.variorum.module.objectives;
 
-import dev.alexanderdiaz.variorum.module.objectives.monument.MonumentDestroyedEvent;
 import dev.alexanderdiaz.variorum.module.state.GameState;
 import dev.alexanderdiaz.variorum.module.state.GameStateChangeEvent;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +13,8 @@ public class ObjectivesListener implements Listener {
     @EventHandler
     public void onGameStateChange(GameStateChangeEvent event) {
         if (event.getNewState() != GameState.PLAYING) {
-            // Prevent objective interaction when match isn't in progress
             module.getObjectives().forEach(Objective::disable);
         } else {
-            // Re-enable objectives when match starts
             module.getObjectives().forEach(Objective::enable);
         }
     }

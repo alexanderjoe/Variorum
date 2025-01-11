@@ -27,6 +27,7 @@ public record TeamChannel(Team team) implements ChatChannel {
                 .build();
 
         getRecipients(sender).forEach(player -> player.sendMessage(formatted));
+        Variorum.get().getServer().getConsoleSender().sendMessage(formatted);
     }
 
     @Override

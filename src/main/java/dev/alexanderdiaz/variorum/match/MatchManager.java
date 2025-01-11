@@ -9,6 +9,7 @@ import dev.alexanderdiaz.variorum.map.rotation.RotationProvider;
 import dev.alexanderdiaz.variorum.util.Events;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.generator.ChunkGenerator;
@@ -58,7 +59,6 @@ public class MatchManager {
                 throw new IllegalStateException("Source world folder does not exist: " + sourceWorldFolder);
             }
 
-            // Get map config
             File mapConfig = new File(sourceWorldFolder, "map.xml");
             if (!mapConfig.exists()) {
                 throw new IllegalStateException("Map config does not exist: " + mapConfig);
@@ -95,13 +95,11 @@ public class MatchManager {
                         }
                     });
 
-            // Ensure matches directory exists
             File matchesDir = new File(Bukkit.getWorldContainer(), MATCHES_FOLDER);
             if (!matchesDir.exists()) {
                 matchesDir.mkdirs();
             }
 
-            // Load world with void generator
             WorldCreator worldCreator = new WorldCreator(matchPath);
             ChunkGenerator voidGenerator = Bukkit.getPluginManager()
                     .getPlugin(VOID_GENERATOR)
@@ -115,14 +113,15 @@ public class MatchManager {
             }
 
             world.setAutoSave(false);
+            world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+            world.setGameRule(GameRule.DO_INSOMNIA, false);
+            world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
 
-            // Load the map config
+
             VariorumMap map = VariorumMapFactory.load(mapConfig);
             plugin.getLogger().info("Loaded map config: " + map.getName());
 
-            // Create match with factory
             currentMatch = matchFactory.create(map, mapConfig, world);
-            // Start the match (which enables modules)
             currentMatch.start();
 
             MatchLoadEvent matchLoadEvent = new MatchLoadEvent(currentMatch);
@@ -131,7 +130,6 @@ public class MatchManager {
             plugin.getLogger().info("Successfully loaded map: " + mapName + " with ID: " + matchId);
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load map: " + mapName, e);
-            e.printStackTrace();
         }
     }
 }

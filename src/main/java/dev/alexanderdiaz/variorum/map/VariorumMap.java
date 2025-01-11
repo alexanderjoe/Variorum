@@ -13,7 +13,6 @@ public class VariorumMap {
     private List<String> authors;
     private List<Team> teams;
     private Spawns spawns;
-    private Objectives objectives;
 
     @Data
     @Builder
@@ -64,39 +63,6 @@ public class VariorumMap {
         @Override
         public String toString() {
             return String.format("%.1f,%.1f,%.1f", x, y, z);
-        }
-    }
-
-    @Data
-    @Builder
-    public static class Objectives {
-        private Monuments monuments;
-
-        @Data
-        @Builder
-        public static class Monuments {
-            private String materials;
-            private List<TeamMonuments> teamMonuments;
-
-            @Data
-            @Builder
-            public static class TeamMonuments {
-                private String owner;
-                private List<Monument> monuments;
-
-                @Data
-                @Builder
-                public static class Monument {
-                    private String name;
-                    private Region region;
-
-                    @Data
-                    @Builder
-                    public static class Region {
-                        private Point block;
-                    }
-                }
-            }
         }
     }
 }

@@ -1,18 +1,18 @@
 package dev.alexanderdiaz.variorum.module.scoreboard;
 
 import dev.alexanderdiaz.variorum.Variorum;
-import dev.alexanderdiaz.variorum.event.match.MatchLoadEvent;
-import dev.alexanderdiaz.variorum.event.match.MatchOpenEvent;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesModule;
+import dev.alexanderdiaz.variorum.module.objectives.monument.MonumentDestroyedEvent;
 import dev.alexanderdiaz.variorum.module.objectives.monument.MonumentObjective;
+import dev.alexanderdiaz.variorum.module.objectives.wool.WoolObjective;
+import dev.alexanderdiaz.variorum.module.objectives.wool.WoolPlaceEvent;
 import dev.alexanderdiaz.variorum.module.state.GameStateChangeEvent;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
 import dev.alexanderdiaz.variorum.util.Events;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -29,7 +29,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 public class ScoreboardModule implements Module {
     private final Match match;
     @Getter
@@ -37,19 +36,20 @@ public class ScoreboardModule implements Module {
     private ComponentSidebarLayout layout;
     private ScoreboardListener listener;
 
+    public ScoreboardModule(Match match) {
+        this.match = match;
+    }
+
     @Override
     public void enable() {
         ScoreboardLibrary scoreboardLibrary = Variorum.get().getScoreboardLibrary();
         this.sidebar = scoreboardLibrary.createSidebar();
 
-        // Create the initial layout
         updateLayout();
 
-        // Register listener
         this.listener = new ScoreboardListener();
         Events.register(listener);
 
-        // Add all current players
         match.getWorld().getPlayers().forEach(this::addPlayer);
     }
 
@@ -85,11 +85,9 @@ public class ScoreboardModule implements Module {
         TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
         ObjectivesModule objectivesModule = match.getRequiredModule(ObjectivesModule.class);
 
-        // Create team-based content
         var contentBuilder = SidebarComponent.builder();
 
         for (Team team : teamsModule.getTeams()) {
-            // Add team name
             contentBuilder.addDynamicLine(() -> Component.text()
                     .append(Component.text(team.name()))
                     .color(team.textColor())
@@ -99,23 +97,48 @@ public class ScoreboardModule implements Module {
             List<MonumentObjective> monumentObjectives = objectivesModule.getObjectives().stream()
                     .filter(obj -> obj instanceof MonumentObjective)
                     .map(obj -> (MonumentObjective) obj)
-                    .filter(mon -> !mon.getOwner().equals(team))
+                    .filter(mon -> mon.getOwner().equals(team))
                     .toList();
 
-            for (MonumentObjective monument : monumentObjectives) {
-                contentBuilder.addDynamicLine(() -> {
-                    Component status = monument.isCompleted() ?
-                            Component.text("✓", NamedTextColor.GREEN).decorate(TextDecoration.BOLD) :
-                            Component.text("✗", NamedTextColor.RED).decorate(TextDecoration.BOLD);
+            if (!monumentObjectives.isEmpty()) {
+                monumentObjectives.forEach(monument -> {
+                    contentBuilder.addDynamicLine(() -> {
+                        Component status = monument.isCompleted() ?
+                                Component.text("✓", NamedTextColor.GREEN).decorate(TextDecoration.BOLD) :
+                                Component.text("✗", NamedTextColor.RED).decorate(TextDecoration.BOLD);
 
-                    return Component.text()
-                            .append(Component.text("  " + monument.getName() + " - ", NamedTextColor.WHITE))
-                            .append(status)
-                            .build();
+                        return Component.text()
+                                .append(Component.text("  " + monument.getName() + " - ", NamedTextColor.WHITE))
+                                .append(status)
+                                .build();
+                    });
                 });
             }
 
-            // Add blank line between teams
+            List<WoolObjective> woolObjectives = objectivesModule.getObjectives().stream()
+                    .filter(obj -> obj instanceof WoolObjective)
+                    .map(obj -> (WoolObjective) obj)
+                    .filter(wool -> wool.getTeam().isPresent() && wool.getTeam().get().equals(team))
+                    .toList();
+
+            Variorum.get().getLogger().info("Loaded wool objectives: " + woolObjectives.size());
+            woolObjectives.forEach(o -> Variorum.get().getLogger().info(o.getName()));
+
+            if (!woolObjectives.isEmpty()) {
+                woolObjectives.forEach(wool -> {
+                    contentBuilder.addDynamicLine(() -> {
+                        Component status = wool.isCompleted() ?
+                                Component.text("✓", NamedTextColor.GREEN).decorate(TextDecoration.BOLD) :
+                                Component.text("✗", NamedTextColor.RED).decorate(TextDecoration.BOLD);
+
+                        return Component.text()
+                                .append(Component.text("  " + wool.getName() + " - ", NamedTextColor.WHITE))
+                                .append(status)
+                                .build();
+                    });
+                });
+            }
+
             contentBuilder.addBlankLine();
         }
 
@@ -126,7 +149,7 @@ public class ScoreboardModule implements Module {
 
         SidebarComponent content = contentBuilder.build();
         this.layout = new ComponentSidebarLayout(
-                SidebarComponent.staticLine(Component.text("Monuments")),
+                SidebarComponent.staticLine(Component.text("Objectives")),
                 content
         );
         this.layout.apply(sidebar);
@@ -144,7 +167,7 @@ public class ScoreboardModule implements Module {
         }
 
         @EventHandler
-        public void onGameStateChange(MatchOpenEvent event) {
+        public void onGameStateChange(dev.alexanderdiaz.variorum.event.match.MatchOpenEvent event) {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 Variorum.get().getServer().getAsyncScheduler().runNow(Variorum.get(), task -> {
                     addPlayer(player);
@@ -158,7 +181,12 @@ public class ScoreboardModule implements Module {
         }
 
         @EventHandler
-        public void onMonumentDestroyed(dev.alexanderdiaz.variorum.module.objectives.monument.MonumentDestroyedEvent event) {
+        public void onMonumentDestroyed(MonumentDestroyedEvent event) {
+            updateLayout();
+        }
+
+        @EventHandler
+        public void onWoolPlace(WoolPlaceEvent event) {
             updateLayout();
         }
     }

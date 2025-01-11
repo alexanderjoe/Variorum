@@ -36,7 +36,6 @@ public class TeamCommands {
             return;
         }
 
-        // Check match state
         GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
         if (stateModule.getCurrentState() == GameState.ENDED) {
             player.sendMessage(Component.text("Cannot join teams while the match is cycling!", NamedTextColor.RED));
@@ -52,13 +51,11 @@ public class TeamCommands {
             return;
         }
 
-        // Check if player is already on this team
         if (from != null && from.equals(to)) {
             player.sendMessage(Component.text("You are already on that team!", NamedTextColor.RED));
             return;
         }
 
-        // Check if teams would become unbalanced
         if (!teamsModule.canJoinTeam(to)) {
             player.sendMessage(Component.text("That team is full!", NamedTextColor.RED));
             return;
@@ -92,7 +89,6 @@ public class TeamCommands {
             return;
         }
 
-        // Check if player is already on this team
         Team currentTeam = teamsModule.getPlayerTeam(player).orElse(null);
         if (currentTeam != null && currentTeam.equals(autoTeam)) {
             player.sendMessage(Component.text("You are already on that team!", NamedTextColor.RED));
@@ -112,7 +108,6 @@ public class TeamCommands {
             return;
         }
 
-        // Check match state
         GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
         if (GameState.ENDED.equals(stateModule.getCurrentState())) {
             player.sendMessage(Component.text("Cannot leave teams while the match is cycling!", NamedTextColor.RED));

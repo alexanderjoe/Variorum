@@ -165,7 +165,7 @@ public class LoadoutsModule implements Module {
             case "yellow" -> Color.YELLOW;
             case "purple", "dark_purple" -> Color.PURPLE;
             case "orange", "gold" -> Color.ORANGE;
-            case "aqua", "dark_aqua" -> Color.AQUA;
+            case "aqua", "dark_aqua", "cyan" -> Color.AQUA;
             default -> Color.WHITE;
         };
     }

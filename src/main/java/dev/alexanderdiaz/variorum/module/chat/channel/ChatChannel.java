@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 
 import java.util.Collection;
 
-// Chat channel interface
 public interface ChatChannel {
     String getName();
 

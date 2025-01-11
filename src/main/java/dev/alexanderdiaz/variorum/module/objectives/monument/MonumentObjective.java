@@ -31,14 +31,10 @@ public class MonumentObjective implements Objective {
     }
 
     @Override
-    public void enable() {
-        // No longer needs to register a listener
-    }
+    public void enable() {}
 
     @Override
-    public void disable() {
-        // No longer needs to unregister a listener
-    }
+    public void disable() {}
 
     @Override
     public String getName() {
@@ -50,6 +46,10 @@ public class MonumentObjective implements Objective {
         return broken;
     }
 
+    public boolean canComplete(Team team) {
+        return this.owner.equals(team);
+    }
+
     public boolean isMonumentBlock(Block block) {
         return region.contains(block.getLocation());
     }
@@ -59,7 +59,6 @@ public class MonumentObjective implements Objective {
     }
 
     public void markBroken() {
-        // Only fire the event if the monument wasn't already broken
         if (!broken) {
             this.broken = true;
             Events.call(new MonumentDestroyedEvent(match, this));

@@ -37,15 +37,17 @@ public class TeamsModule implements Module {
                 .findFirst();
     }
 
+    public boolean isSpectator(Player player) {
+        return getPlayerTeam(player).isEmpty();
+    }
+
     public void setPlayerTeam(Player player, Team team) {
         Team oldTeam = playerTeams.get(player.getUniqueId());
 
-        // Don't do anything if player is already on this team
         if (oldTeam != null && oldTeam.equals(team)) {
             return;
         }
 
-        // Fire team change event
         var event = new PlayerChangeTeamEvent(player, oldTeam, team);
 
         if (oldTeam != null) {
@@ -73,7 +75,6 @@ public class TeamsModule implements Module {
     public void removePlayerFromTeam(Player player) {
         Team oldTeam = playerTeams.get(player.getUniqueId());
         if (oldTeam != null) {
-            // Fire team change event (to null team)
             var event = new PlayerChangeTeamEvent(player, oldTeam, null);
             Events.call(event);
             if (event.isCancelled()) {
@@ -93,7 +94,6 @@ public class TeamsModule implements Module {
                 .filter(t -> t.equals(team))
                 .count();
 
-        // Get the size of the smallest team
         long minTeamSize = teams.stream()
                 .mapToLong(t -> playerTeams.values().stream()
                         .filter(pt -> pt.equals(t))
@@ -106,7 +106,6 @@ public class TeamsModule implements Module {
     }
 
     public Team autoAssignTeam(Player player) {
-        // Find the team with the fewest players
         return teams.stream()
                 .min(Comparator.comparingLong(team ->
                         playerTeams.values().stream()

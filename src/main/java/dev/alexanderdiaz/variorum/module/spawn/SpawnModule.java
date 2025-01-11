@@ -41,7 +41,6 @@ public class SpawnModule implements Module {
         TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
 
         matchWorld.getPlayers().forEach(player -> {
-            // Only teleport and give loadouts to players who are on a team
             if (teamsModule.getPlayerTeam(player).isPresent()) {
                 spawnPlayer(player, true);
             }
@@ -52,7 +51,6 @@ public class SpawnModule implements Module {
         World matchWorld = match.getWorld();
         VariorumMap map = match.getMap();
 
-        // Try to find team-specific spawn
         TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
         Optional<Team> playerTeam = teamsModule.getPlayerTeam(player);
 
@@ -83,7 +81,6 @@ public class SpawnModule implements Module {
                     .getPlayerTeam(player)
                     .orElse(null);
 
-            // Apply spawn-specific loadout if specified, otherwise use default
             String loadoutId = spawnRegion.getLoadout() != null ? spawnRegion.getLoadout() : "default";
             if (loadoutsModule.getLoadouts().containsKey(loadoutId)) {
                 loadoutsModule.applyLoadout(player, loadoutId, team);
@@ -116,12 +113,10 @@ public class SpawnModule implements Module {
         TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
         Team playerTeam = teamsModule.getPlayerTeam(player).orElse(null);
 
-        // Get spawn location and apply loadout
         Players.reset(player);
         Location spawn = getSpawnLocation(player);
         player.teleport(spawn);
 
-        // Apply loadout based on spawn point
         if (playerTeam != null && giveLoadout) {
             VariorumMap map = match.getMap();
             Optional<VariorumMap.Spawns.TeamSpawn> teamSpawn = map.getSpawns().getTeamSpawns()

@@ -2,15 +2,16 @@ package dev.alexanderdiaz.variorum.match;
 
 import com.google.common.base.Preconditions;
 import dev.alexanderdiaz.variorum.Variorum;
-import dev.alexanderdiaz.variorum.event.match.MatchLoadEvent;
 import dev.alexanderdiaz.variorum.event.match.MatchOpenEvent;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.util.Events;
 import lombok.Getter;
+import lombok.ToString;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.yaml.snakeyaml.events.MappingStartEvent;
+import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Level;
 
+@ToString
 public class Match {
     @Getter
     private final VariorumMap map;
@@ -26,7 +28,6 @@ public class Match {
     @Getter
     private boolean active = true;
 
-    // Module Management
     private final Map<Class<? extends Module>, Module> modules;
     private final List<Module> orderedModules;
 
@@ -35,6 +36,10 @@ public class Match {
         this.world = world;
         this.modules = new HashMap<>();
         this.orderedModules = new ArrayList<>();
+    }
+
+    public Collection<Player> getPlayers() {
+        return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
 
     /**
@@ -74,7 +79,6 @@ public class Match {
     public void start() {
         if (!active) return;
 
-        // Enable all modules in order
         for (Module module : orderedModules) {
             try {
                 module.enable();
@@ -94,7 +98,6 @@ public class Match {
         if (!active) return;
         active = false;
 
-        // Disable all modules in reverse order
         for (int i = orderedModules.size() - 1; i >= 0; i--) {
             Module module = orderedModules.get(i);
             try {
@@ -104,18 +107,14 @@ public class Match {
             }
         }
 
-        // Clear module collections
         modules.clear();
         orderedModules.clear();
 
-        // Teleport all players out
         world.getPlayers().forEach(player ->
                 player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation()));
 
-        // Unload world
         Bukkit.unloadWorld(world, false);
 
-        // Delete world files
         try {
             Path worldPath = world.getWorldFolder().toPath();
             Files.walk(worldPath)
@@ -132,13 +131,11 @@ public class Match {
         }
     }
 
-    @Override
-    public String toString() {
-        return "Match{" +
-                "map=" + map +
-                ", world=" + world +
-                ", active=" + active +
-                ", moduleCount=" + modules.size() +
-                '}';
+    public void broadcast(Component message) {
+        for (Player player : this.getPlayers()) {
+            player.sendMessage(message);
+        }
+
+        Bukkit.getConsoleSender().sendMessage(message);
     }
 }

@@ -49,7 +49,7 @@ public class GameStateCommands {
                             NamedTextColor.GREEN));
                     break;
                 case COUNTDOWN:
-                    stateModule.startCountdown(seconds); // Restart countdown with new time
+                    stateModule.startCountdown(seconds);
                     sender.sendMessage(Component.text("Restarting countdown with " + seconds + " seconds",
                             NamedTextColor.GREEN));
                     break;

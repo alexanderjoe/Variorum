@@ -101,7 +101,7 @@ public final class Variorum extends JavaPlugin {
             System.gc();
 
             Files.walk(matchesPath)
-                    .sorted((a, b) -> -a.compareTo(b)) // Reverse order to delete contents first
+                    .sorted((a, b) -> -a.compareTo(b))
                     .forEach(path -> {
                         try {
                             Files.delete(path);

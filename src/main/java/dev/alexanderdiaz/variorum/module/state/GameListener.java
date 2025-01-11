@@ -11,8 +11,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 public class GameListener implements Listener {
-    private Match match;
-    private GameStateModule gameState;
+    private final Match match;
+    private final GameStateModule gameState;
 
     public GameListener(Match match, GameStateModule gameState) {
         this.match = match;
@@ -35,7 +35,6 @@ public class GameListener implements Listener {
             return;
         }
 
-        // Check if player is on a team
         TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
         if (teamsModule.getPlayerTeam(event.getPlayer()).isEmpty()) {
             event.setCancelled(true);
@@ -49,7 +48,6 @@ public class GameListener implements Listener {
             return;
         }
 
-        // Check if player is on a team
         TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
         if (teamsModule.getPlayerTeam(event.getPlayer()).isEmpty()) {
             event.setCancelled(true);

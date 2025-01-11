@@ -5,8 +5,9 @@ import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesModule;
 import dev.alexanderdiaz.variorum.module.objectives.monument.MonumentDestroyedEvent;
-import dev.alexanderdiaz.variorum.module.objectives.monument.MonumentObjective;
+import dev.alexanderdiaz.variorum.module.objectives.wool.WoolPlaceEvent;
 import dev.alexanderdiaz.variorum.module.state.GameState;
+import dev.alexanderdiaz.variorum.module.state.GameStateChangeEvent;
 import dev.alexanderdiaz.variorum.module.state.GameStateModule;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
@@ -17,7 +18,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ResultsModule implements Module {
     private final Match match;
@@ -60,13 +64,10 @@ public class ResultsModule implements Module {
         // Get total number of objectives each team needs to complete
         Map<Team, Integer> requiredObjectives = new HashMap<>();
         teamsModule.getTeams().forEach(team -> {
-            // Count all monuments that belong to other teams
             long count = objectivesModule.getObjectives().stream()
-                    .filter(obj -> obj instanceof MonumentObjective)
-                    .map(obj -> (MonumentObjective) obj)
-                    .filter(monument -> !monument.getOwner().equals(team))
+                    .filter(obj -> obj.canComplete(team))
                     .count();
-            requiredObjectives.put(team, (int)count);
+            requiredObjectives.put(team, (int) count);
         });
 
         // Check if any team has completed ALL their required objectives
@@ -115,7 +116,6 @@ public class ResultsModule implements Module {
         GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
 
         if (stateModule.getCurrentState() == GameState.PLAYING) {
-            // Announce result
             match.getWorld().getPlayers().forEach(player -> {
                 // Main result message
                 if (result.getWinningTeam().isPresent()) {
@@ -142,7 +142,6 @@ public class ResultsModule implements Module {
 
             });
 
-            // End the match
             MatchCompleteEvent mce = new MatchCompleteEvent(match, List.of(), List.of());
             Events.call(mce);
             stateModule.setState(GameState.ENDED);
@@ -154,21 +153,32 @@ public class ResultsModule implements Module {
         public void onMonumentDestroyed(MonumentDestroyedEvent event) {
             if (resultDeclared) return;
 
-            // Credit objective completion to the non-owner team
             TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
             teamsModule.getTeams().stream()
-                    .filter(team -> !team.equals(event.getMonument().getOwner()))
+                    .filter(team -> team.equals(event.getMonument().getOwner()))
                     .forEach(team -> {
                         teamResults.get(team).incrementObjectives();
                     });
 
-            // Check if this destruction results in a victory
             checkResult();
         }
 
         @EventHandler
-        public void onGameStateChange(dev.alexanderdiaz.variorum.module.state.GameStateChangeEvent event) {
-            // When match ends naturally, check based on most objectives completed
+        public void onWoolPlaced(WoolPlaceEvent event) {
+            if (resultDeclared) return;
+
+            TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+            teamsModule.getTeams().stream()
+                    .filter(team -> team.equals(event.getObjective().getTeam().orElse(null)))
+                    .forEach(team -> {
+                        teamResults.get(team).incrementObjectives();
+                    });
+
+            checkResult();
+        }
+
+        @EventHandler
+        public void onGameStateChange(GameStateChangeEvent event) {
             if (event.getNewState() == GameState.ENDED && event.getOldState() == GameState.PLAYING) {
                 checkFinalScore();
             }

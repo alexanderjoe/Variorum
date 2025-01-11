@@ -32,7 +32,6 @@ public class MatchFactory {
         this.factories = new HashMap<>();
         this.orderedFactories = new ArrayList<>();
 
-        // Register module factories
         registerDefaults();
     }
 
@@ -69,21 +68,17 @@ public class MatchFactory {
     }
 
     public Match create(VariorumMap map, File mapConfig, World world) throws Exception {
-        // Create a secure document builder
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // Security features
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
         DocumentBuilder builder = factory.newDocumentBuilder();
 
-        // Parse the map configuration
         Document document = builder.parse(mapConfig);
         Element root = document.getDocumentElement();
 
-        // Create a new match instance
         Match match = new Match(map, world);
 
-        // Build and add modules
         for (ModuleFactory<?> moduleFactory : orderedFactories) {
             try {
                 Optional<?> module = moduleFactory.build(match, root);
@@ -95,7 +90,6 @@ public class MatchFactory {
                 }
             } catch (Exception e) {
                 Variorum.get().getLogger().log(Level.SEVERE, "Failed to build module using " + moduleFactory.getClass().getName(), e);
-                e.printStackTrace();
             }
         }
 

@@ -59,7 +59,7 @@ public class GameStateModule implements Module {
                     }
                 },
                 60L,
-                600L
+                1200L
         );
     }
 

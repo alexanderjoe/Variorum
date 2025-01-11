@@ -1,5 +1,6 @@
 package dev.alexanderdiaz.variorum.module.chat;
 
+import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.chat.channel.ChatChannel;
@@ -70,7 +71,6 @@ public class ChatModule implements Module {
             Player player = event.getPlayer();
             String messageStr = ((net.kyori.adventure.text.TextComponent) event.message()).content();
 
-            // Handle message sending
             ChatChannel channel = playerChannels.getOrDefault(player.getUniqueId(),
                     channels.stream()
                             .filter(ch -> ch instanceof GlobalChannel)

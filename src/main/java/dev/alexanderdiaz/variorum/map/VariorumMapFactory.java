@@ -20,8 +20,10 @@ public class VariorumMapFactory {
         try {
             Document doc = createSecureDocumentBuilder().parse(file);
             return createMapFromDocument(doc);
+        } catch (MapParseException e) {
+            throw e;
         } catch (Exception e) {
-            throw new MapLoadException("Failed to load map from file", e);
+            throw new MapLoadException("Failed to parse map file: " + file.getName(), e);
         }
     }
 
@@ -29,14 +31,15 @@ public class VariorumMapFactory {
         try {
             Document doc = createSecureDocumentBuilder().parse(inputStream);
             return createMapFromDocument(doc);
+        } catch (MapParseException e) {
+            throw e;
         } catch (Exception e) {
-            throw new MapLoadException("Failed to load map from input stream", e);
+            throw new MapLoadException("Failed to parse map from input stream", e);
         }
     }
 
     private static DocumentBuilder createSecureDocumentBuilder() throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        // Security features
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
         return factory.newDocumentBuilder();
@@ -46,18 +49,59 @@ public class VariorumMapFactory {
         doc.getDocumentElement().normalize();
         Element mapElement = doc.getDocumentElement();
 
-        return VariorumMap.builder()
-                .name(mapElement.getAttribute("name"))
-                .authors(createAuthors(doc))
-                .teams(createTeams(doc))
-                .spawns(createSpawns(doc))
-                .objectives(createObjectives(doc))
-                .build();
+        if (!"map".equals(mapElement.getTagName())) {
+            throw new MapParseException(
+                    "Root element must be <map>",
+                    "document",
+                    getElementContext(mapElement)
+            );
+        }
+
+        VariorumMap.VariorumMapBuilder builder = VariorumMap.builder();
+
+        try {
+            builder.name(getRequiredAttribute(mapElement, "name", "document"));
+
+            try {
+                builder.authors(createAuthors(doc));
+            } catch (Exception e) {
+                throw enhanceException(e, "authors", mapElement);
+            }
+
+            try {
+                builder.teams(createTeams(doc));
+            } catch (Exception e) {
+                throw enhanceException(e, "teams", mapElement);
+            }
+
+            try {
+                builder.spawns(createSpawns(doc));
+            } catch (Exception e) {
+                throw enhanceException(e, "spawns", mapElement);
+            }
+
+            return builder.build();
+
+        } catch (MapParseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MapParseException(
+                    "Failed to create map from document",
+                    "document",
+                    getElementContext(mapElement),
+                    e
+            );
+        }
     }
 
     private static List<String> createAuthors(Document doc) {
         List<String> authors = new ArrayList<>();
         NodeList authorNodes = doc.getElementsByTagName("author");
+
+        if (authorNodes.getLength() == 0) {
+            throw new MapParseException("Map must have at least one author", "authors");
+        }
+
         for (int i = 0; i < authorNodes.getLength(); i++) {
             authors.add(authorNodes.item(i).getTextContent());
         }
@@ -67,36 +111,79 @@ public class VariorumMapFactory {
     private static List<VariorumMap.Team> createTeams(Document doc) {
         List<VariorumMap.Team> teams = new ArrayList<>();
         NodeList teamNodes = doc.getElementsByTagName("team");
+
+        if (teamNodes.getLength() == 0) {
+            throw new MapParseException("Map must have at least one team", "teams");
+        }
+
         for (int i = 0; i < teamNodes.getLength(); i++) {
-            Element teamElement = (Element) teamNodes.item(i);
-            teams.add(VariorumMap.Team.builder()
-                    .id(teamElement.getAttribute("id"))
-                    .color(teamElement.getAttribute("color"))
-                    .name(teamElement.getTextContent())
-                    .build());
+            try {
+                Element teamElement = (Element) teamNodes.item(i);
+                teams.add(VariorumMap.Team.builder()
+                        .id(getRequiredAttribute(teamElement, "id", "teams"))
+                        .color(getRequiredAttribute(teamElement, "color", "teams"))
+                        .name(teamElement.getTextContent())
+                        .build());
+            } catch (Exception e) {
+                throw new MapParseException(
+                        "Failed to parse team at index " + i,
+                        "teams",
+                        getElementContext((Element) teamNodes.item(i)),
+                        e
+                );
+            }
         }
         return teams;
     }
 
     private static VariorumMap.Spawns createSpawns(Document doc) {
-        Element spawnsElement = (Element) doc.getElementsByTagName("spawns").item(0);
+        Element spawnsElement = getRequiredElement(doc, "spawns", "spawns", "Map must have spawns defined");
 
-        return VariorumMap.Spawns.builder()
-                .defaultSpawn(createSpawnRegion((Element) spawnsElement.getElementsByTagName("default").item(0)))
-                .teamSpawns(createTeamSpawns(spawnsElement))
-                .build();
+        try {
+            return VariorumMap.Spawns.builder()
+                    .defaultSpawn(createSpawnRegion(
+                            getRequiredElement(spawnsElement, "default", "spawns", "Default spawn must be defined")
+                    ))
+                    .teamSpawns(createTeamSpawns(spawnsElement))
+                    .build();
+        } catch (MapParseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MapParseException(
+                    "Failed to parse spawns section",
+                    "spawns",
+                    getElementContext(spawnsElement),
+                    e
+            );
+        }
     }
 
     private static VariorumMap.Spawns.SpawnRegion createSpawnRegion(Element element) {
-        Element regionsElement = (Element) element.getElementsByTagName("regions").item(0);
-        String loadout = element.getAttribute("loadout");
+        try {
+            Element regionsElement = getRequiredElement(element, "regions", "spawns", "Spawn must have regions defined");
+            String loadout = element.getAttribute("loadout");
 
-        return VariorumMap.Spawns.SpawnRegion.builder()
-                .yaw(Double.parseDouble(regionsElement.getAttribute("yaw")))
-                .point(VariorumMap.Point.fromString(
-                        regionsElement.getElementsByTagName("point").item(0).getTextContent()))
-                .loadout(loadout.isEmpty() ? null : loadout)
-                .build();
+            return VariorumMap.Spawns.SpawnRegion.builder()
+                    .yaw(Double.parseDouble(regionsElement.getAttribute("yaw")))
+                    .point(VariorumMap.Point.fromString(
+                            getRequiredElement(regionsElement, "point", "spawns", "Spawn region must have a point").getTextContent()))
+                    .loadout(loadout.isEmpty() ? null : loadout)
+                    .build();
+        } catch (NumberFormatException e) {
+            throw new MapParseException(
+                    "Invalid yaw value",
+                    "spawns",
+                    getElementContext(element),
+                    e
+            );
+        } catch (IllegalArgumentException e) {
+            throw new MapParseException(
+                    "Invalid point format",
+                    "spawns",
+                    getElementContext(element),
+                    e
+            );
+        }
     }
 
     private static List<VariorumMap.Spawns.TeamSpawn> createTeamSpawns(Element spawnsElement) {
@@ -114,58 +201,72 @@ public class VariorumMapFactory {
         return teamSpawns;
     }
 
-    private static VariorumMap.Objectives createObjectives(Document doc) {
-        Element objectivesElement = (Element) doc.getElementsByTagName("objectives").item(0);
-        Element monumentsRoot = (Element) objectivesElement.getElementsByTagName("monuments").item(0);
+    public static String getElementContext(Element element) {
+        try {
+            StringBuilder context = new StringBuilder();
+            context.append("<").append(element.getTagName());
 
-        return VariorumMap.Objectives.builder()
-                .monuments(VariorumMap.Objectives.Monuments.builder()
-                        .materials(monumentsRoot.getAttribute("materials"))
-                        .teamMonuments(createTeamMonuments(monumentsRoot))
-                        .build())
-                .build();
-    }
-
-    private static List<VariorumMap.Objectives.Monuments.TeamMonuments> createTeamMonuments(Element monumentsRoot) {
-        List<VariorumMap.Objectives.Monuments.TeamMonuments> teamMonuments = new ArrayList<>();
-        NodeList teamMonumentNodes = monumentsRoot.getElementsByTagName("monuments");
-
-        for (int i = 0; i < teamMonumentNodes.getLength(); i++) {
-            Element teamMonumentsElement = (Element) teamMonumentNodes.item(i);
-            if (teamMonumentsElement.hasAttribute("owner")) {
-                teamMonuments.add(createTeamMonument(teamMonumentsElement));
+            if (element.hasAttributes()) {
+                for (int i = 0; i < element.getAttributes().getLength(); i++) {
+                    var attr = element.getAttributes().item(i);
+                    context.append(" ").append(attr.getNodeName())
+                            .append("=\"").append(attr.getNodeValue()).append("\"");
+                }
             }
-        }
 
-        return teamMonuments;
+            if (element.hasChildNodes()) {
+                context.append(">...</").append(element.getTagName()).append(">");
+            } else {
+                context.append("/>");
+            }
+
+            return context.toString();
+        } catch (Exception e) {
+            return "Unable to get XML context";
+        }
     }
 
-    private static VariorumMap.Objectives.Monuments.TeamMonuments createTeamMonument(Element teamMonumentsElement) {
-        List<VariorumMap.Objectives.Monuments.TeamMonuments.Monument> monuments = new ArrayList<>();
-        NodeList monumentNodes = teamMonumentsElement.getElementsByTagName("monument");
-
-        for (int i = 0; i < monumentNodes.getLength(); i++) {
-            Element monumentElement = (Element) monumentNodes.item(i);
-            Element regionElement = (Element) monumentElement.getElementsByTagName("region").item(0);
-
-            monuments.add(VariorumMap.Objectives.Monuments.TeamMonuments.Monument.builder()
-                    .name(monumentElement.getAttribute("name"))
-                    .region(VariorumMap.Objectives.Monuments.TeamMonuments.Monument.Region.builder()
-                            .block(VariorumMap.Point.fromString(
-                                    regionElement.getElementsByTagName("block").item(0).getTextContent()))
-                            .build())
-                    .build());
+    private static MapParseException enhanceException(Exception e, String section, Element context) {
+        if (e instanceof MapParseException) {
+            return (MapParseException) e;
         }
-
-        return VariorumMap.Objectives.Monuments.TeamMonuments.builder()
-                .owner(teamMonumentsElement.getAttribute("owner"))
-                .monuments(monuments)
-                .build();
+        return new MapParseException(
+                "Failed to parse " + section + " section: " + e.getMessage(),
+                section,
+                getElementContext(context),
+                e
+        );
     }
 
-    public static class MapLoadException extends RuntimeException {
-        public MapLoadException(String message, Throwable cause) {
-            super(message, cause);
+    private static String getRequiredAttribute(Element element, String attribute, String section) {
+        String value = element.getAttribute(attribute);
+        if (value == null || value.isEmpty()) {
+            throw new MapParseException(
+                    "Required attribute '" + attribute + "' missing from element: " + element.getTagName(),
+                    section,
+                    getElementContext(element)
+            );
         }
+        return value;
+    }
+
+    private static Element getRequiredElement(Element parent, String tagName, String section, String message) {
+        Element element = (Element) parent.getElementsByTagName(tagName).item(0);
+        if (element == null) {
+            throw new MapParseException(
+                    message,
+                    section,
+                    getElementContext(parent)
+            );
+        }
+        return element;
+    }
+
+    private static Element getRequiredElement(Document doc, String tagName, String section, String message) {
+        Element element = (Element) doc.getElementsByTagName(tagName).item(0);
+        if (element == null) {
+            throw new MapParseException(message, section);
+        }
+        return element;
     }
 }
