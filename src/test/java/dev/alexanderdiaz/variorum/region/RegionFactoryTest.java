@@ -49,7 +49,8 @@ class RegionFactoryTest {
 
     @Test
     void testThatFactoryFailsToParseRegionGivenInvalidInputXml() {
-        Element invalidRegion = (Element) root.getElementsByTagName("invalid-region").item(0);
+        Element invalidRegion =
+                (Element) root.getElementsByTagName("invalid-region").item(0);
         assertThrows(IllegalArgumentException.class, () -> RegionFactory.parse(invalidRegion));
     }
 
