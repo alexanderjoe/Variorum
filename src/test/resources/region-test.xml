@@ -21,4 +21,7 @@
   <region id="sphere">
     <sphere center="0,64,0" radius="4" />
   </region>
+  <invalid-region>
+    <invalid>0, 64, 0</invalid>
+  </invalid-region>
 </test>

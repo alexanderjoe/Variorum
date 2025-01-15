@@ -47,6 +47,12 @@ class RegionFactoryTest {
         assertEquals(new SphereRegion(new Vector(0, 64, 0), 4), last, "Region not equal.");
     }
 
+    @Test
+    void testThatFactoryFailsToParseRegionGivenInvalidInputXml() {
+        Element invalidRegion = (Element) root.getElementsByTagName("invalid-region").item(0);
+        assertThrows(IllegalArgumentException.class, () -> RegionFactory.parse(invalidRegion));
+    }
+
     private static DocumentBuilder createSecureDocumentBuilder() throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
