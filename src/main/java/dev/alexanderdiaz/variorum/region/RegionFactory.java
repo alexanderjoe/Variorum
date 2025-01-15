@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.bukkit.util.Vector;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class RegionFactory {
     private static final Map<Method, Collection<String>> PARSERS = NamedParsers.getMethods(RegionFactory.class);
@@ -23,11 +24,14 @@ public class RegionFactory {
      */
     public static Region parse(Element element) {
         if (element.getTagName().equals("region")) {
-            Element blockElement =
-                    (Element) element.getElementsByTagName("block").item(0);
-            if (blockElement != null) {
-                return parseBlock(blockElement);
+            NodeList children = element.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                if (children.item(i) instanceof Element childElement) {
+                    return NamedParsers.invoke(
+                            INSTANCE, PARSERS, childElement, "Unknown region type: " + childElement.getTagName());
+                }
             }
+            throw new IllegalArgumentException("Region element has no valid child elements");
         }
 
         return NamedParsers.invoke(INSTANCE, PARSERS, element, "Unknown region type: " + element.getTagName());

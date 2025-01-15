@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test name="Region Test">
+  <region id="block">
+    <block>0, 64, 0</block>
+  </region>
+  <region id="point">
+    <point>27.5,76.0,0.5</point>
+  </region>
+  <region id="box">
+    <box center="0,64,0" x="2" y="2" z="2" />
+  </region>
+  <region id="cuboid">
+    <cuboid min="0,64,0" max="10,70,4" />
+  </region>
+  <region id="circle">
+    <circle center="0,64, 0" radius="5" />
+  </region>
+  <region id="cylinder">
+    <cylinder center="0,64,0" radius="3" height="5" />
+  </region>
+  <region id="sphere">
+    <sphere center="0,64,0" radius="4" />
+  </region>
+</test>

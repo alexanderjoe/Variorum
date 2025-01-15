@@ -1,5 +1,6 @@
 package dev.alexanderdiaz.variorum.region;
 
+import java.util.Objects;
 import lombok.Getter;
 import org.bukkit.util.Vector;
 
@@ -35,5 +36,19 @@ public class SphereRegion extends AbstractRegion {
     @Override
     public Vector getCenter() {
         return center.clone();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        SphereRegion that = (SphereRegion) o;
+        return Double.compare(radius, that.radius) == 0
+                && Double.compare(radiusSquared, that.radiusSquared) == 0
+                && Objects.equals(center, that.center);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(center, radius, radiusSquared);
     }
 }

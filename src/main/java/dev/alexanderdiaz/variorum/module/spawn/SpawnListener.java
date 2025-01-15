@@ -29,13 +29,13 @@ public class SpawnListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         event.joinMessage(null);
-        module.spawnPlayer(event.getPlayer(), false);
+        module.spawnPlayer(event.getPlayer(), false, true);
     }
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         event.setRespawnLocation(module.getSpawnLocation(event.getPlayer()));
-        module.spawnPlayer(event.getPlayer(), true);
+        module.spawnPlayer(event.getPlayer(), true, true);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -43,11 +43,12 @@ public class SpawnListener implements Listener {
         GameStateModule gameState = module.getMatch().getRequiredModule(GameStateModule.class);
 
         if (event.getToTeam() == null) {
+            module.spawnPlayer(event.getPlayer(), false, false);
             return;
         }
 
         if (GameState.PLAYING.equals(gameState.getCurrentState())) {
-            module.spawnPlayer(event.getPlayer(), true);
+            module.spawnPlayer(event.getPlayer(), true, true);
         }
     }
 
@@ -55,11 +56,13 @@ public class SpawnListener implements Listener {
     public void onGameStateChange(GameStateChangeEvent event) {
         if (event.getNewState() == GameState.PLAYING) {
             module.handleMatchStart();
+        } else if (event.getNewState() == GameState.ENDED) {
+            module.handleMatchEnded();
         }
     }
 
     @EventHandler
     public void onMatchOpen(MatchOpenEvent event) {
-        Bukkit.getOnlinePlayers().forEach(player -> module.spawnPlayer(player, false));
+        Bukkit.getOnlinePlayers().forEach(player -> module.spawnPlayer(player, false, true));
     }
 }

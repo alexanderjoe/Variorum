@@ -43,8 +43,16 @@ public class SpawnModule implements Module {
 
         matchWorld.getPlayers().forEach(player -> {
             if (teamsModule.getPlayerTeam(player).isPresent()) {
-                spawnPlayer(player, true);
+                spawnPlayer(player, true, true);
             }
+        });
+    }
+
+    public void handleMatchEnded() {
+        World matchWorld = match.getWorld();
+
+        matchWorld.getPlayers().forEach(player -> {
+            spawnPlayer(player, false, false);
         });
     }
 
@@ -95,7 +103,7 @@ public class SpawnModule implements Module {
                 matchWorld, defaultPoint.getX(), defaultPoint.getY(), defaultPoint.getZ(), (float) defaultYaw, 0.0f);
     }
 
-    public void spawnPlayer(Player player, boolean giveLoadout) {
+    public void spawnPlayer(Player player, boolean giveLoadout, boolean teleport) {
         World matchWorld = match.getWorld();
         if (matchWorld == null) {
             Variorum.get().getLogger().warning("Match world is null when trying to spawn " + player.getName());
@@ -107,11 +115,13 @@ public class SpawnModule implements Module {
 
         Players.reset(player);
 
-        PlayerSpawnStartEvent call = new PlayerSpawnStartEvent(player, playerTeam, giveLoadout, true);
+        PlayerSpawnStartEvent call = new PlayerSpawnStartEvent(player, playerTeam, giveLoadout, teleport);
         Events.call(call);
 
         Location spawn = getSpawnLocation(player);
-        player.teleport(spawn);
+        if (teleport) {
+            player.teleport(spawn);
+        }
 
         if (playerTeam != null && giveLoadout) {
             VariorumMap map = match.getMap();

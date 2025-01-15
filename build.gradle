@@ -22,7 +22,9 @@ repositories {
 }
 
 dependencies {
+    //paper api
     compileOnly("io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT")
 
     //lombok
     compileOnly("org.projectlombok:lombok:1.18.36")
@@ -34,10 +36,17 @@ dependencies {
     implementation("org.incendo:cloud-paper:2.0.0-beta.10")
     implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.10")
 
+    // scoreboard-api library
     var scoreboardLibraryVersion = "2.2.2"
     implementation("net.megavex:scoreboard-library-api:$scoreboardLibraryVersion")
     runtimeOnly("net.megavex:scoreboard-library-implementation:$scoreboardLibraryVersion")
     runtimeOnly("net.megavex:scoreboard-library-modern:$scoreboardLibraryVersion")
+    implementation 'com.google.guava:guava:33.0.0-jre'
+
+    // testing
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 def targetJavaVersion = 21
@@ -90,5 +99,12 @@ processResources {
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
         expand props
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
     }
 }

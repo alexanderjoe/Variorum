@@ -123,7 +123,6 @@ public class ScoreboardModule implements Module {
                             wool.getTeam().isPresent() && wool.getTeam().get().equals(team))
                     .toList();
 
-            Variorum.get().getLogger().info("Loaded wool objectives: " + woolObjectives.size());
             woolObjectives.forEach(o -> Variorum.get().getLogger().info(o.getName()));
 
             if (!woolObjectives.isEmpty()) {
