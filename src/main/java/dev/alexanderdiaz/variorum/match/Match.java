@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.event.match.MatchOpenEvent;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
+import dev.alexanderdiaz.variorum.match.registry.MatchRegistry;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.util.Events;
 import java.io.IOException;
@@ -24,6 +25,9 @@ public class Match {
     private final VariorumMap map;
 
     @Getter
+    private final MatchRegistry registry;
+
+    @Getter
     private final World world;
 
     @Getter
@@ -34,6 +38,7 @@ public class Match {
 
     public Match(VariorumMap map, World world) {
         this.map = map;
+        this.registry = new MatchRegistry(this);
         this.world = world;
         this.modules = new HashMap<>();
         this.orderedModules = new ArrayList<>();

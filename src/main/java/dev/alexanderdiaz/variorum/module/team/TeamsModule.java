@@ -10,23 +10,45 @@ import java.util.*;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team.OptionStatus;
 
 public class TeamsModule implements Module {
+    @Getter
     private final Match match;
 
     @Getter
     private final List<Team> teams;
 
     private final Map<UUID, Team> playerTeams = new HashMap<>();
-    private TeamListener listener;
-    private Scoreboard scoreboard;
+    private final List<Listener> listeners = new ArrayList<>();
+    private final Scoreboard scoreboard;
+
+    public TeamsModule(Match match, List<Team> teams) {
+        this.match = match;
+        this.teams = Collections.unmodifiableList(new ArrayList<>(teams));
+        this.scoreboard = Variorum.get().getServer().getScoreboardManager().getNewScoreboard();
+    }
+
+    @Override
+    public void enable() {
+        listeners.add(new TeamListener(this));
+        listeners.add(new SpectatorListener(this));
+        listeners.forEach(Events::register);
+    }
+
+    @Override
+    public void disable() {
+        listeners.forEach(Events::unregister);
+        playerTeams.clear();
+        teams.forEach(team -> {
+            org.bukkit.scoreboard.Team scoreboardTeam = scoreboard.getTeam(team.id());
+            if (scoreboardTeam != null) {
+                scoreboardTeam.unregister();
+            }
+        });
+    }
 
     public Optional<Team> getPlayerTeam(Player player) {
         return Optional.ofNullable(playerTeams.get(player.getUniqueId()));
@@ -108,54 +130,5 @@ public class TeamsModule implements Module {
                         .filter(t -> t.equals(team))
                         .count()))
                 .orElse(null);
-    }
-
-    public TeamsModule(Match match, List<Team> teams) {
-        this.match = match;
-        this.teams = Collections.unmodifiableList(new ArrayList<>(teams));
-        this.scoreboard = Variorum.get().getServer().getScoreboardManager().getNewScoreboard();
-    }
-
-    @Override
-    public void enable() {
-        this.listener = new TeamListener();
-        Events.register(listener);
-    }
-
-    @Override
-    public void disable() {
-        if (listener != null) {
-            Events.unregister(listener);
-        }
-        playerTeams.clear();
-        teams.forEach(team -> {
-            org.bukkit.scoreboard.Team scoreboardTeam = scoreboard.getTeam(team.id());
-            if (scoreboardTeam != null) {
-                scoreboardTeam.unregister();
-            }
-        });
-    }
-
-    private class TeamListener implements Listener {
-        @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-        public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-            if (!(event.getEntity() instanceof Player victim) || !(event.getDamager() instanceof Player attacker)) {
-                return;
-            }
-
-            Optional<Team> victimTeam = getPlayerTeam(victim);
-            Optional<Team> attackerTeam = getPlayerTeam(attacker);
-
-            if (victimTeam.isPresent()
-                    && attackerTeam.isPresent()
-                    && victimTeam.get().equals(attackerTeam.get())) {
-                event.setCancelled(true);
-            }
-        }
-
-        @EventHandler
-        public void onPlayerQuit(PlayerQuitEvent event) {
-            removePlayerFromTeam(event.getPlayer());
-        }
     }
 }

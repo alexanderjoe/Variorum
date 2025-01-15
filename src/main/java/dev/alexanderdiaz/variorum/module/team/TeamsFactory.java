@@ -8,7 +8,7 @@ import java.util.Optional;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class TeamsModuleFactory implements ModuleFactory<TeamsModule> {
+public class TeamsFactory implements ModuleFactory<TeamsModule> {
     @Override
     public Optional<TeamsModule> build(Match match, Element root) {
         NodeList teamNodes = root.getElementsByTagName("team");
@@ -24,7 +24,10 @@ public class TeamsModuleFactory implements ModuleFactory<TeamsModule> {
             String name = teamElement.getTextContent();
             String color = teamElement.getAttribute("color");
 
-            teams.add(new Team(id, name, color));
+            Team team = new Team(id, name, color);
+
+            match.getRegistry().register(team);
+            teams.add(team);
         }
 
         return Optional.of(new TeamsModule(match, teams));

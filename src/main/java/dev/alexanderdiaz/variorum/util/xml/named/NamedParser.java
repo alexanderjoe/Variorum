@@ -1,4 +1,4 @@
-package dev.alexanderdiaz.variorum.util.xml;
+package dev.alexanderdiaz.variorum.util.xml.named;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

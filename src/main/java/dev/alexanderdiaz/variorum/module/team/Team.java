@@ -1,10 +1,11 @@
 package dev.alexanderdiaz.variorum.module.team;
 
+import dev.alexanderdiaz.variorum.match.registry.RegisterableObject;
 import lombok.ToString;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 @ToString
-public class Team {
+public class Team implements RegisterableObject<Team> {
     private final String id;
     private final String name;
     private final String color;
@@ -46,5 +47,15 @@ public class Team {
 
     public String color() {
         return color;
+    }
+
+    @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @Override
+    public Team getObject() {
+        return this;
     }
 }

@@ -6,8 +6,6 @@ import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutArmor;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutEffect;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutItem;
 import dev.alexanderdiaz.variorum.module.team.Team;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Getter;
@@ -21,29 +19,24 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+@Getter
 public class LoadoutsModule implements Module {
     private final Match match;
 
-    @Getter
-    private final Map<String, Loadout> loadouts;
-
-    public LoadoutsModule(Match match, Map<String, Loadout> loadouts) {
+    public LoadoutsModule(Match match) {
         this.match = match;
-        this.loadouts = new HashMap<>(loadouts);
     }
 
     @Override
-    public void enable() {
-        // nothing to enable, giving a loadout is part of SpawnModule
-    }
+    public void enable() {}
 
     @Override
-    public void disable() {
-        loadouts.clear();
-    }
+    public void disable() {}
 
     public void applyLoadout(Player player, String loadoutId, Team team) {
-        Loadout loadout = loadouts.get(loadoutId);
+        Loadout loadout =
+                match.getRegistry().get(Loadout.class, loadoutId, true).orElse(null);
+
         if (loadout == null) return;
 
         player.getInventory().clear();

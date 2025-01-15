@@ -1,6 +1,7 @@
 package dev.alexanderdiaz.variorum.module.loadouts;
 
 import dev.alexanderdiaz.variorum.match.Match;
+import dev.alexanderdiaz.variorum.match.registry.RegisteredObject;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutArmor;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutEffect;
@@ -17,17 +18,17 @@ public class LoadoutsFactory implements ModuleFactory<LoadoutsModule> {
             return Optional.empty();
         }
 
-        Map<String, Loadout> loadouts = new HashMap<>();
         NodeList loadoutNodes = ((Element) loadoutsRoot.item(0)).getElementsByTagName("loadout");
 
         for (int i = 0; i < loadoutNodes.getLength(); i++) {
             Element loadoutElement = (Element) loadoutNodes.item(i);
             String id = loadoutElement.getAttribute("id");
             Loadout loadout = parseLoadout(id, loadoutElement);
-            loadouts.put(id, loadout);
+
+            match.getRegistry().register(new RegisteredObject<>(id, loadout));
         }
 
-        return Optional.of(new LoadoutsModule(match, loadouts));
+        return Optional.of(new LoadoutsModule(match));
     }
 
     private Loadout parseLoadout(String id, Element element) {

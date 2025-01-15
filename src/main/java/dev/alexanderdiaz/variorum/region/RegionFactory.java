@@ -1,8 +1,8 @@
 package dev.alexanderdiaz.variorum.region;
 
 import dev.alexanderdiaz.variorum.map.VariorumMap;
-import dev.alexanderdiaz.variorum.util.xml.NamedParser;
-import dev.alexanderdiaz.variorum.util.xml.NamedParsers;
+import dev.alexanderdiaz.variorum.util.xml.named.NamedParser;
+import dev.alexanderdiaz.variorum.util.xml.named.NamedParsers;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;

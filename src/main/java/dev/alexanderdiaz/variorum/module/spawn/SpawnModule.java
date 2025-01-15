@@ -1,6 +1,7 @@
 package dev.alexanderdiaz.variorum.module.spawn;
 
 import dev.alexanderdiaz.variorum.Variorum;
+import dev.alexanderdiaz.variorum.event.player.PlayerSpawnStartEvent;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
@@ -77,7 +78,7 @@ public class SpawnModule implements Module {
                     .orElse(null);
 
             String loadoutId = spawnRegion.getLoadout() != null ? spawnRegion.getLoadout() : "default";
-            if (loadoutsModule.getLoadouts().containsKey(loadoutId)) {
+            if (match.getRegistry().has(loadoutId)) {
                 loadoutsModule.applyLoadout(player, loadoutId, team);
             }
         });
@@ -105,6 +106,10 @@ public class SpawnModule implements Module {
         Team playerTeam = teamsModule.getPlayerTeam(player).orElse(null);
 
         Players.reset(player);
+
+        PlayerSpawnStartEvent call = new PlayerSpawnStartEvent(player, playerTeam, giveLoadout, true);
+        Events.call(call);
+
         Location spawn = getSpawnLocation(player);
         player.teleport(spawn);
 

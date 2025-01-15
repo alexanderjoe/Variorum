@@ -1,4 +1,4 @@
-package dev.alexanderdiaz.variorum.util.xml;
+package dev.alexanderdiaz.variorum.util.xml.named;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

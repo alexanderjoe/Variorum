@@ -11,7 +11,7 @@ import dev.alexanderdiaz.variorum.module.results.ResultsFactory;
 import dev.alexanderdiaz.variorum.module.scoreboard.ScoreboardFactory;
 import dev.alexanderdiaz.variorum.module.spawn.SpawnFactory;
 import dev.alexanderdiaz.variorum.module.state.GameStateFactory;
-import dev.alexanderdiaz.variorum.module.team.TeamsModuleFactory;
+import dev.alexanderdiaz.variorum.module.team.TeamsFactory;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
@@ -37,7 +37,7 @@ public class MatchFactory {
 
     private void registerDefaults() {
         // Register all module factories
-        register(TeamsModuleFactory.class);
+        register(TeamsFactory.class);
         register(SpawnFactory.class);
         register(ChatFactory.class);
         register(GameStateFactory.class);

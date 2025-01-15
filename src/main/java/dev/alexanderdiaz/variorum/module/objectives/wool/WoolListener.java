@@ -12,11 +12,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -152,6 +156,34 @@ public class WoolListener implements Listener {
                 Variorum.get().getLogger().info("Refilling inventory");
                 inventory.addItem(woolStack);
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event) {
+        ItemStack item = event.getCurrentItem();
+        if (item == null) return;
+
+        var holder = event.getInventory().getHolder();
+        Block block;
+
+        if (holder instanceof Chest) {
+            block = ((Chest) holder).getBlock();
+        } else if (holder instanceof DoubleChest) {
+            block = ((DoubleChest) holder).getLocation().getBlock();
+        } else {
+            // not an inventory to be concerned with
+            return;
+        }
+
+        Player player = (Player) event.getWhoClicked();
+        Team team = module.getMatch()
+                .getRequiredModule(TeamsModule.class)
+                .getPlayerTeam(player)
+                .orElse(null);
+
+        if (team == null) {
+            event.setCancelled(true);
         }
     }
 }

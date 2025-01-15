@@ -1,8 +1,11 @@
 package dev.alexanderdiaz.variorum.command;
 
 import dev.alexanderdiaz.variorum.Variorum;
+import dev.alexanderdiaz.variorum.match.Match;
+import dev.alexanderdiaz.variorum.match.registry.RegisterableObject;
 import dev.alexanderdiaz.variorum.module.objectives.Objective;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesModule;
+import java.util.HashMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
@@ -46,5 +49,30 @@ public class TestCommand {
         Player player = (Player) sender;
         player.setGameMode(GameMode.CREATIVE);
         player.sendMessage(Component.text("Set gamemode to creative", NamedTextColor.YELLOW));
+    }
+
+    @Command("registry|mr")
+    @CommandDescription("Show objects that are in the match registry.")
+    public void registryList(CommandSender sender) {
+        Player player = (Player) sender;
+
+        Match match = Variorum.getMatch();
+        if (match == null) {
+            sender.sendMessage(Component.text("No match found!", NamedTextColor.RED));
+            return;
+        }
+        Component message = Component.text("Objects in Match Registry", NamedTextColor.YELLOW)
+                .appendNewline();
+
+        HashMap<String, RegisterableObject> objects = match.getRegistry().getRegistry();
+        for (RegisterableObject o : objects.values()) {
+            message = message.append(Component.text("    "))
+                    .append(Component.text(o.getObject().getClass().getSimpleName(), NamedTextColor.WHITE))
+                    .append(Component.text(" - ", NamedTextColor.YELLOW))
+                    .append(Component.text("\"" + o.getId() + "\"", NamedTextColor.WHITE))
+                    .append(Component.newline());
+        }
+
+        sender.sendMessage(message);
     }
 }

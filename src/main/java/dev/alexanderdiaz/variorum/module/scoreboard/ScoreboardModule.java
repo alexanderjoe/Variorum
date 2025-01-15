@@ -1,6 +1,7 @@
 package dev.alexanderdiaz.variorum.module.scoreboard;
 
 import dev.alexanderdiaz.variorum.Variorum;
+import dev.alexanderdiaz.variorum.event.match.MatchOpenEvent;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesModule;
@@ -166,7 +167,7 @@ public class ScoreboardModule implements Module {
         }
 
         @EventHandler
-        public void onGameStateChange(dev.alexanderdiaz.variorum.event.match.MatchOpenEvent event) {
+        public void onGameStateChange(MatchOpenEvent event) {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 Variorum.get().getServer().getAsyncScheduler().runNow(Variorum.get(), task -> {
                     addPlayer(player);
