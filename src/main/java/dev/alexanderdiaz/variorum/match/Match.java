@@ -23,7 +23,8 @@ import org.bukkit.entity.Player;
 public class Match {
     @Getter
     private final VariorumMap map;
-
+    @Getter
+    private final MatchFactory factory;
     @Getter
     private final MatchRegistry registry;
 
@@ -36,8 +37,9 @@ public class Match {
     private final Map<Class<? extends Module>, Module> modules;
     private final List<Module> orderedModules;
 
-    public Match(VariorumMap map, World world) {
+    public Match(VariorumMap map, MatchFactory matchFactory, World world) {
         this.map = map;
+        this.factory = matchFactory;
         this.registry = new MatchRegistry(this);
         this.world = world;
         this.modules = new HashMap<>();

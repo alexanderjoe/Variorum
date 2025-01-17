@@ -1,6 +1,8 @@
-package dev.alexanderdiaz.variorum.region;
+package dev.alexanderdiaz.variorum.util.region.shapes;
 
 import java.util.Objects;
+
+import dev.alexanderdiaz.variorum.util.region.AbstractRegion;
 import lombok.Getter;
 import org.bukkit.util.Vector;
 

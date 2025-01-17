@@ -1,4 +1,4 @@
-package dev.alexanderdiaz.variorum.region;
+package dev.alexanderdiaz.variorum.util.region.shapes;
 
 import org.bukkit.util.Vector;
 

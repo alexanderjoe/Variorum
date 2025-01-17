@@ -3,7 +3,7 @@ package dev.alexanderdiaz.variorum.module.objectives.monument;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.objectives.Objective;
 import dev.alexanderdiaz.variorum.module.team.Team;
-import dev.alexanderdiaz.variorum.region.Region;
+import dev.alexanderdiaz.variorum.util.region.Region;
 import dev.alexanderdiaz.variorum.util.Events;
 import java.util.HashSet;
 import java.util.Set;

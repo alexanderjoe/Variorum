@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import dev.alexanderdiaz.variorum.util.region.Region;
+import dev.alexanderdiaz.variorum.util.region.shapes.SphereRegion;
 import org.bukkit.util.Vector;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

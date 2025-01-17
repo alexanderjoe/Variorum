@@ -1,4 +1,4 @@
-package dev.alexanderdiaz.variorum.region;
+package dev.alexanderdiaz.variorum.util.region;
 
 import java.util.Set;
 import org.bukkit.Location;

@@ -7,6 +7,7 @@ import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.chat.ChatFactory;
 import dev.alexanderdiaz.variorum.module.loadouts.LoadoutsFactory;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesFactory;
+import dev.alexanderdiaz.variorum.module.regions.RegionsFactory;
 import dev.alexanderdiaz.variorum.module.results.ResultsFactory;
 import dev.alexanderdiaz.variorum.module.scoreboard.ScoreboardFactory;
 import dev.alexanderdiaz.variorum.module.spawn.SpawnFactory;
@@ -37,14 +38,15 @@ public class MatchFactory {
 
     private void registerDefaults() {
         // Register all module factories
-        register(TeamsFactory.class);
-        register(SpawnFactory.class);
         register(ChatFactory.class);
         register(GameStateFactory.class);
+        register(LoadoutsFactory.class);
         register(ObjectivesFactory.class);
+        register(RegionsFactory.class);
         register(ResultsFactory.class);
         register(ScoreboardFactory.class);
-        register(LoadoutsFactory.class);
+        register(SpawnFactory.class);
+        register(TeamsFactory.class);
     }
 
     public <F extends ModuleFactory<M>, M extends Module> void register(Class<F> clazz) {
@@ -77,7 +79,7 @@ public class MatchFactory {
         Document document = builder.parse(mapConfig);
         Element root = document.getDocumentElement();
 
-        Match match = new Match(map, world);
+        Match match = new Match(map, this, world);
 
         for (ModuleFactory<?> moduleFactory : orderedFactories) {
             try {

@@ -1,7 +1,9 @@
-package dev.alexanderdiaz.variorum.region;
+package dev.alexanderdiaz.variorum.util.region.shapes;
 
 import java.util.Collections;
 import java.util.Set;
+
+import dev.alexanderdiaz.variorum.util.region.AbstractRegion;
 import lombok.Getter;
 import org.bukkit.World;
 import org.bukkit.block.Block;

@@ -5,7 +5,7 @@ import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.objectives.Objective;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
-import dev.alexanderdiaz.variorum.region.Region;
+import dev.alexanderdiaz.variorum.util.region.Region;
 import dev.alexanderdiaz.variorum.util.Colors;
 import java.util.Optional;
 import lombok.Getter;
