@@ -6,7 +6,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
-abstract class AbstractRegion implements Region {
+public abstract class AbstractRegion implements Region {
     @Override
     public boolean contains(Location location) {
         return contains(location.toVector());

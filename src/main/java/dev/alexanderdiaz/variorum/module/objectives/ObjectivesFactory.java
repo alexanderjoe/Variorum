@@ -9,6 +9,7 @@ import dev.alexanderdiaz.variorum.module.objectives.monument.MonumentObjective;
 import dev.alexanderdiaz.variorum.module.objectives.wool.WoolObjective;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
+import dev.alexanderdiaz.variorum.util.FactoryHelper;
 import dev.alexanderdiaz.variorum.util.region.Region;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParser;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParsers;
@@ -145,6 +146,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
                     getElementContext(destinationElement));
         }
         Region destination = RegionFactory.parse(regionElement);
+        Region destination = FactoryHelper.resolveRequiredRegion(match, Region.class, destinationElement, Optional.of(regionElement));
 
         Element sourceElement =
                 (Element) woolElement.getElementsByTagName("source").item(0);
