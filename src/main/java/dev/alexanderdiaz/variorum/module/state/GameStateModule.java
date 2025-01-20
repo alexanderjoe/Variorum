@@ -152,11 +152,6 @@ public class GameStateModule implements Module {
 
         final Component COUNTDOWN_PREFIX = Component.text("Match starting in ", NamedTextColor.YELLOW);
 
-        match.getWorld().getPlayers().forEach(player -> {
-            player.setGameMode(GameMode.ADVENTURE);
-            player.sendMessage(Component.text("Match starting soon!", NamedTextColor.GREEN));
-        });
-
         final int[] secondsLeft = {seconds};
 
         countdownTask = Variorum.get()

@@ -1,6 +1,5 @@
 package dev.alexanderdiaz.variorum.module.objectives.wool;
 
-import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.module.objectives.Objective;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesModule;
 import dev.alexanderdiaz.variorum.module.team.Team;
@@ -18,10 +17,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -123,8 +124,6 @@ public class WoolListener implements Listener {
         if (!(event.getInventory().getHolder() instanceof BlockState)) return;
         Player player = (Player) event.getPlayer();
 
-        Variorum.get().getLogger().info("Inventory closed by " + player.getName());
-
         if (this.module.getMatch().getRequiredModule(TeamsModule.class).isSpectator(player)) return;
 
         Block block = ((BlockState) event.getInventory().getHolder()).getBlock();
@@ -134,7 +133,6 @@ public class WoolListener implements Listener {
             return;
         }
 
-        Variorum.get().getLogger().info("Start of objs check");
         for (Objective obj : module.getObjectives()) {
             if (!(obj instanceof WoolObjective wool)) continue;
 
@@ -152,8 +150,7 @@ public class WoolListener implements Listener {
 
             ItemStack woolStack = new ItemStack(Material.valueOf(wool.getColor().toString() + "_WOOL"));
 
-            if (inventory.firstEmpty() != -1) {
-                Variorum.get().getLogger().info("Refilling inventory");
+            while (inventory.firstEmpty() != -1) {
                 inventory.addItem(woolStack);
             }
         }
@@ -184,6 +181,61 @@ public class WoolListener implements Listener {
 
         if (team == null) {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        if (!(event.getInventory().getHolder() instanceof BlockState)) return;
+        Player player = (Player) event.getPlayer();
+        Team team = module.getMatch()
+                .getRequiredModule(TeamsModule.class)
+                .getPlayerTeam(player)
+                .orElse(null);
+
+        if (team == null) return;
+
+        Block block = ((BlockState) event.getInventory().getHolder()).getBlock();
+
+        for (Objective obj : module.getObjectives()) {
+            if (!(obj instanceof WoolObjective wool)) continue;
+
+            if (wool.getSource().isEmpty()) {
+                continue;
+            }
+
+            if (!wool.isValidSource(block)) {
+                continue;
+            }
+
+            if (!wool.canComplete(team)) {
+                player.sendMessage(
+                        Component.text("You are not allowed to interact with this chest!", NamedTextColor.RED));
+                event.setCancelled(true);
+                break;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        Block block = event.getBlock();
+        Player player = event.getPlayer();
+
+        for (Objective obj : module.getObjectives()) {
+            if (!(obj instanceof WoolObjective wool)) continue;
+
+            if (wool.getSource().isEmpty()) {
+                continue;
+            }
+
+            if (!wool.isValidSource(block)) {
+                continue;
+            }
+
+            player.sendMessage(Component.text("You are not allowed to break this block!", NamedTextColor.RED));
+            event.setCancelled(true);
+            break;
         }
     }
 }

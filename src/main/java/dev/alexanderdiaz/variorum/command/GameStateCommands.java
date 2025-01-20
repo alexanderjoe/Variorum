@@ -9,10 +9,7 @@ import java.util.regex.Pattern;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
-import org.incendo.cloud.annotations.Argument;
-import org.incendo.cloud.annotations.Command;
-import org.incendo.cloud.annotations.CommandDescription;
-import org.incendo.cloud.annotations.Permission;
+import org.incendo.cloud.annotations.*;
 
 public class GameStateCommands {
     private final Variorum plugin;
@@ -21,10 +18,10 @@ public class GameStateCommands {
         this.plugin = plugin;
     }
 
-    @Command("start [time]")
+    @Command("start|s [time]")
     @CommandDescription("Force start the match with optional countdown time")
     @Permission("variorum.command.start")
-    public void startMatch(final CommandSender sender, final @Argument(value = "time") String timeStr) {
+    public void startMatch(final CommandSender sender, final @Default("3s") @Argument(value = "time") String timeStr) {
         Match match = Variorum.getMatch();
         if (match == null) {
             sender.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
@@ -37,26 +34,26 @@ public class GameStateCommands {
             return;
         }
 
-        match.getModule(GameStateModule.class).ifPresent(stateModule -> {
-            switch (stateModule.getCurrentState()) {
-                case WAITING:
-                    stateModule.startCountdown(seconds);
-                    sender.sendMessage(Component.text(
-                            "Starting match countdown with " + seconds + " seconds", NamedTextColor.GREEN));
-                    break;
-                case COUNTDOWN:
-                    stateModule.startCountdown(seconds);
-                    sender.sendMessage(
-                            Component.text("Restarting countdown with " + seconds + " seconds", NamedTextColor.GREEN));
-                    break;
-                case PLAYING:
-                    sender.sendMessage(Component.text("Match is already in progress!", NamedTextColor.RED));
-                    break;
-                case ENDED:
-                    sender.sendMessage(Component.text("Match has already ended!", NamedTextColor.RED));
-                    break;
-            }
-        });
+        GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
+
+        switch (stateModule.getCurrentState()) {
+            case WAITING:
+                stateModule.startCountdown(seconds);
+                sender.sendMessage(
+                        Component.text("Starting match countdown with " + seconds + " seconds", NamedTextColor.GREEN));
+                break;
+            case COUNTDOWN:
+                stateModule.startCountdown(seconds);
+                sender.sendMessage(
+                        Component.text("Restarting countdown with " + seconds + " seconds", NamedTextColor.GREEN));
+                break;
+            case PLAYING:
+                sender.sendMessage(Component.text("Match is already in progress!", NamedTextColor.RED));
+                break;
+            case ENDED:
+                sender.sendMessage(Component.text("Match has already ended!", NamedTextColor.RED));
+                break;
+        }
     }
 
     @Command("end")
@@ -69,21 +66,21 @@ public class GameStateCommands {
             return;
         }
 
-        match.getModule(GameStateModule.class).ifPresent(stateModule -> {
-            switch (stateModule.getCurrentState()) {
-                case WAITING:
-                case COUNTDOWN:
-                    sender.sendMessage(Component.text("Match hasn't started yet!", NamedTextColor.RED));
-                    break;
-                case PLAYING:
-                    stateModule.setState(GameState.ENDED);
-                    sender.sendMessage(Component.text("Ending match...", NamedTextColor.GREEN));
-                    break;
-                case ENDED:
-                    sender.sendMessage(Component.text("Match has already ended!", NamedTextColor.RED));
-                    break;
-            }
-        });
+        GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
+
+        switch (stateModule.getCurrentState()) {
+            case WAITING:
+            case COUNTDOWN:
+                sender.sendMessage(Component.text("Match hasn't started yet!", NamedTextColor.RED));
+                break;
+            case PLAYING:
+                stateModule.setState(GameState.ENDED);
+                sender.sendMessage(Component.text("Ending match...", NamedTextColor.GREEN));
+                break;
+            case ENDED:
+                sender.sendMessage(Component.text("Match has already ended!", NamedTextColor.RED));
+                break;
+        }
     }
 
     private int parseTimeString(String timeStr) {

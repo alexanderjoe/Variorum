@@ -12,7 +12,7 @@ version = '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
     maven {
-        name = "papermc-repo"
+        name = "papermc"
         url = "https://repo.papermc.io/repository/maven-public/"
     }
     maven {
@@ -23,8 +23,8 @@ repositories {
 
 dependencies {
     //paper api
-    compileOnly("io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT")
-    testImplementation("io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
 
     //lombok
     compileOnly("org.projectlombok:lombok:1.18.36")
