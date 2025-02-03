@@ -25,7 +25,7 @@ public class TestCommand {
     @CommandDescription("Command to return \"ping\"")
     public void pong(final CommandSender sender) {
 
-        Variorum.get().getMatchManager().cycleToNextMatch();
+        Variorum.get().getMatchManager().getRotation().cycle();
     }
 
     @Command("objectives|objs")

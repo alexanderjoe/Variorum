@@ -11,6 +11,7 @@ public class VariorumMap {
     private List<String> authors;
     private List<Team> teams;
     private Spawns spawns;
+    private MapSource source;
 
     @Data
     @Builder

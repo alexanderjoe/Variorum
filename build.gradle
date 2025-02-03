@@ -43,6 +43,9 @@ dependencies {
     runtimeOnly("net.megavex:scoreboard-library-modern:$scoreboardLibraryVersion")
     implementation 'com.google.guava:guava:33.0.0-jre'
 
+    // gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+
     // testing
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")

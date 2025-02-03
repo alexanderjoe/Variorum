@@ -1,6 +1,7 @@
 package dev.alexanderdiaz.variorum.module.team;
 
 import dev.alexanderdiaz.variorum.match.registry.RegisterableObject;
+import dev.alexanderdiaz.variorum.util.Colors;
 import lombok.ToString;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -17,24 +18,7 @@ public class Team implements RegisterableObject<Team> {
     }
 
     public NamedTextColor textColor() {
-        return switch (this.color) {
-            case "black" -> NamedTextColor.BLACK;
-            case "dark_blue" -> NamedTextColor.DARK_BLUE;
-            case "dark_green" -> NamedTextColor.DARK_GREEN;
-            case "dark_aqua" -> NamedTextColor.DARK_AQUA;
-            case "dark_red" -> NamedTextColor.DARK_RED;
-            case "dark_purple" -> NamedTextColor.DARK_PURPLE;
-            case "gold" -> NamedTextColor.GOLD;
-            case "gray" -> NamedTextColor.GRAY;
-            case "dark_gray" -> NamedTextColor.DARK_GRAY;
-            case "blue" -> NamedTextColor.BLUE;
-            case "green" -> NamedTextColor.GREEN;
-            case "red" -> NamedTextColor.RED;
-            case "light_purple", "purple" -> NamedTextColor.LIGHT_PURPLE;
-            case "yellow" -> NamedTextColor.YELLOW;
-            case "white" -> NamedTextColor.WHITE;
-            default -> NamedTextColor.AQUA;
-        };
+        return Colors.stringToTextColor(this.color);
     }
 
     public String id() {

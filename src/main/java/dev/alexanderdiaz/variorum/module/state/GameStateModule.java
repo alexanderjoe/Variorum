@@ -137,7 +137,10 @@ public class GameStateModule implements Module {
                         .getScheduler()
                         .runTaskLater(
                                 Variorum.get(),
-                                () -> Variorum.get().getMatchManager().cycleToNextMatch(),
+                                () -> Variorum.get()
+                                        .getMatchManager()
+                                        .getRotation()
+                                        .cycle(),
                                 CYCLE_DELAY_TICKS);
                 break;
         }

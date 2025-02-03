@@ -1,6 +1,5 @@
 package dev.alexanderdiaz.variorum.util;
 
-import dev.alexanderdiaz.variorum.Variorum;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -20,7 +19,7 @@ public class Players {
         player.setSaturation(5);
         player.setCanPickupItems(true);
         player.setFireTicks(0);
-        Variorum.get().getLogger().info(player.getRemainingAir() + " air remaining");
+        player.setRemainingAir(300);
         player.setFallDistance(0.0F);
         player.setVelocity(new Vector());
         player.resetPlayerWeather();

@@ -3,6 +3,7 @@ package dev.alexanderdiaz.variorum.match;
 import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.map.VariorumMap;
 import dev.alexanderdiaz.variorum.module.Module;
+import dev.alexanderdiaz.variorum.module.ModuleBuildException;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.chat.ChatFactory;
 import dev.alexanderdiaz.variorum.module.loadouts.LoadoutsFactory;
@@ -12,13 +13,10 @@ import dev.alexanderdiaz.variorum.module.scoreboard.ScoreboardFactory;
 import dev.alexanderdiaz.variorum.module.spawn.SpawnFactory;
 import dev.alexanderdiaz.variorum.module.state.GameStateFactory;
 import dev.alexanderdiaz.variorum.module.team.TeamsFactory;
-import java.io.File;
 import java.util.*;
-import java.util.logging.Level;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.Getter;
-import org.bukkit.World;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -32,11 +30,6 @@ public class MatchFactory {
         this.factories = new HashMap<>();
         this.orderedFactories = new ArrayList<>();
 
-        registerDefaults();
-    }
-
-    private void registerDefaults() {
-        // Register all module factories
         register(TeamsFactory.class);
         register(SpawnFactory.class);
         register(ChatFactory.class);
@@ -67,40 +60,24 @@ public class MatchFactory {
         return (F) factory;
     }
 
-    public Match create(VariorumMap map, File mapConfig, World world) throws Exception {
+    public Match create(VariorumMap map) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // Security features
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
         DocumentBuilder builder = factory.newDocumentBuilder();
 
-        Document document = builder.parse(mapConfig);
+        Document document = builder.parse(map.getSource().getXmlFile());
         Element root = document.getDocumentElement();
 
-        Match match = new Match(map, world);
+        Match match = new Match(map, this);
 
         for (ModuleFactory<?> moduleFactory : orderedFactories) {
             try {
-                Optional<?> module = moduleFactory.build(match, root);
-                if (module.isPresent()) {
-                    match.addModule((Module) module.get());
-                    Variorum.get()
-                            .getLogger()
-                            .info("Added module: " + module.get().getClass().getSimpleName());
-                } else {
-                    Variorum.get()
-                            .getLogger()
-                            .info("Module factory " + moduleFactory.getClass().getSimpleName()
-                                    + " did not create a module");
-                }
+                Optional<? extends Module> module = moduleFactory.build(match, root);
+                module.ifPresent(match::addModule);
             } catch (Exception e) {
-                Variorum.get()
-                        .getLogger()
-                        .log(
-                                Level.SEVERE,
-                                "Failed to build module using "
-                                        + moduleFactory.getClass().getName(),
-                                e);
+                throw new ModuleBuildException(moduleFactory, e);
             }
         }
 

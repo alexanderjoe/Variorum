@@ -1,10 +1,7 @@
 package dev.alexanderdiaz.variorum.command.util;
 
 import dev.alexanderdiaz.variorum.Variorum;
-import dev.alexanderdiaz.variorum.command.ChatCommands;
-import dev.alexanderdiaz.variorum.command.GameStateCommands;
-import dev.alexanderdiaz.variorum.command.TeamCommands;
-import dev.alexanderdiaz.variorum.command.TestCommand;
+import dev.alexanderdiaz.variorum.command.*;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.minecraft.extras.MinecraftHelp;
 
@@ -19,6 +16,7 @@ public class VariorumCommandGraph extends CommandGraph<Variorum> {
         register(new TeamCommands(plugin));
         register(new ChatCommands(plugin));
         register(new GameStateCommands(plugin));
+        register(new RotationCommands(plugin));
     }
 
     @Override
