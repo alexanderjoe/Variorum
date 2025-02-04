@@ -72,7 +72,7 @@ public class ScoreboardModule implements Module {
     }
 
     private void addPlayer(Player player) {
-        if (sidebar != null && match.isActive()) {
+        if (sidebar != null && match.isLoaded()) {
             sidebar.addPlayer(player);
         }
     }

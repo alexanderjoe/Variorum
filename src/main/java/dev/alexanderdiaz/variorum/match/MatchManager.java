@@ -1,132 +1,34 @@
 package dev.alexanderdiaz.variorum.match;
 
 import dev.alexanderdiaz.variorum.Variorum;
-import dev.alexanderdiaz.variorum.event.match.MatchLoadEvent;
-import dev.alexanderdiaz.variorum.map.VariorumMap;
-import dev.alexanderdiaz.variorum.map.VariorumMapFactory;
-import dev.alexanderdiaz.variorum.map.rotation.DefaultRotationProvider;
-import dev.alexanderdiaz.variorum.map.rotation.RotationProvider;
-import dev.alexanderdiaz.variorum.util.Events;
-import java.io.File;
+import dev.alexanderdiaz.variorum.map.rotation.Rotation;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
 import java.util.logging.Level;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.GameRule;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.generator.ChunkGenerator;
 
 public class MatchManager {
-    private final Variorum plugin;
+    @Getter
     private final MatchFactory matchFactory;
-    private final RotationProvider rotationProvider;
 
     @Getter
-    private Match currentMatch;
+    private final Rotation rotation;
 
-    private static final String MATCHES_FOLDER = "matches";
-    private static final String VOID_GENERATOR = "VoidWorldGenerator";
-
-    public MatchManager(Variorum plugin) {
-        this.plugin = plugin;
-        this.matchFactory = new MatchFactory();
-        this.rotationProvider = new DefaultRotationProvider(matchFactory, plugin);
+    public MatchManager(MatchFactory factory, Rotation rotation) {
+        this.matchFactory = factory;
+        this.rotation = rotation;
     }
 
-    public void cycleToNextMatch() {
-        Match oldMatch = currentMatch;
-
-        String nextMap = rotationProvider.provideRotation().getNextMap();
-        loadMap(nextMap);
-
-        if (currentMatch != null && oldMatch != null) {
-            oldMatch.end();
-        }
+    public void start() throws IOException {
+        this.rotation.start();
     }
 
-    public void loadMap(String mapName) {
-        try {
-            String matchId = UUID.randomUUID().toString().substring(0, 8).toLowerCase();
-            String matchWorldName = mapName.toLowerCase() + "_" + matchId;
-            String matchPath = MATCHES_FOLDER + "/" + matchWorldName;
-
-            File sourceWorldFolder = new File(plugin.getDataFolder(), "maps" + File.separator + mapName);
-            if (!sourceWorldFolder.exists()) {
-                throw new IllegalStateException("Source world folder does not exist: " + sourceWorldFolder);
+    public void shutdown() {
+        for (final Match match : this.rotation.getMapQueue()) {
+            try {
+                match.unload();
+            } catch (Exception e) {
+                Variorum.get().getLogger().log(Level.WARNING, "Failed to delete match: " + match, e.getMessage());
             }
-
-            File mapConfig = new File(sourceWorldFolder, "map.xml");
-            if (!mapConfig.exists()) {
-                throw new IllegalStateException("Map config does not exist: " + mapConfig);
-            }
-            plugin.getLogger().info("Found map config at: " + mapConfig.getAbsolutePath());
-
-            File targetWorldFolder = new File(Bukkit.getWorldContainer(), matchPath);
-            targetWorldFolder.getParentFile().mkdirs();
-
-            if (targetWorldFolder.exists()) {
-                Files.walk(targetWorldFolder.toPath())
-                        .sorted((a, b) -> -a.compareTo(b))
-                        .forEach(path -> {
-                            try {
-                                Files.delete(path);
-                            } catch (IOException e) {
-                                plugin.getLogger().log(Level.WARNING, "Failed to delete: " + path, e);
-                            }
-                        });
-            }
-
-            Files.walk(sourceWorldFolder.toPath()).forEach(sourcePath -> {
-                Path relativePath = sourceWorldFolder.toPath().relativize(sourcePath);
-                Path targetPath = targetWorldFolder.toPath().resolve(relativePath);
-                try {
-                    if (Files.isDirectory(sourcePath)) {
-                        Files.createDirectories(targetPath);
-                    } else {
-                        Files.copy(sourcePath, targetPath);
-                    }
-                } catch (IOException e) {
-                    plugin.getLogger().log(Level.WARNING, "Failed to copy: " + sourcePath, e);
-                }
-            });
-
-            File matchesDir = new File(Bukkit.getWorldContainer(), MATCHES_FOLDER);
-            if (!matchesDir.exists()) {
-                matchesDir.mkdirs();
-            }
-
-            WorldCreator worldCreator = new WorldCreator(matchPath);
-            ChunkGenerator voidGenerator =
-                    Bukkit.getPluginManager().getPlugin(VOID_GENERATOR).getDefaultWorldGenerator(matchPath, null);
-
-            worldCreator.generator(voidGenerator);
-            World world = worldCreator.createWorld();
-
-            if (world == null) {
-                throw new IllegalStateException("Failed to load world: " + matchPath);
-            }
-
-            world.setAutoSave(false);
-            world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
-            world.setGameRule(GameRule.DO_INSOMNIA, false);
-            world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
-
-            VariorumMap map = VariorumMapFactory.load(mapConfig);
-            plugin.getLogger().info("Loaded map config: " + map.getName());
-
-            currentMatch = matchFactory.create(map, mapConfig, world);
-            currentMatch.start();
-
-            MatchLoadEvent matchLoadEvent = new MatchLoadEvent(currentMatch);
-            Events.call(matchLoadEvent);
-
-            plugin.getLogger().info("Successfully loaded map: " + mapName + " with ID: " + matchId);
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load map: " + mapName, e);
         }
     }
 }

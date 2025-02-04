@@ -1,48 +1,49 @@
 package dev.alexanderdiaz.variorum.map.rotation;
 
 import dev.alexanderdiaz.variorum.Variorum;
+import dev.alexanderdiaz.variorum.map.MapManager;
+import dev.alexanderdiaz.variorum.map.VariorumMap;
+import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.match.MatchFactory;
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
+import javax.annotation.Nullable;
 
 public abstract class AbstractRotationProvider implements RotationProvider {
     protected final MatchFactory factory;
-    protected final Variorum plugin;
+    protected final MapManager mapManager;
 
-    protected AbstractRotationProvider(MatchFactory factory, Variorum plugin) {
+    protected AbstractRotationProvider(MapManager mm, MatchFactory factory) {
+        this.mapManager = mm;
         this.factory = factory;
-        this.plugin = plugin;
     }
 
-    protected Rotation defaultRotation() {
-        List<String> maps = new ArrayList<>();
-        File mapsFolder = new File(plugin.getDataFolder(), "maps");
-
-        if (!mapsFolder.exists() || !mapsFolder.isDirectory()) {
-            plugin.getLogger().log(Level.WARNING, "Maps folder not found or is not a directory");
-            return new Rotation(maps);
-        }
-
-        File[] mapFolders = mapsFolder.listFiles(File::isDirectory);
-        if (mapFolders == null) {
-            plugin.getLogger().log(Level.WARNING, "Failed to list map folders");
-            return new Rotation(maps);
-        }
-
-        for (File mapFolder : mapFolders) {
-            if (new File(mapFolder, "map.xml").exists()) {
-                maps.add(mapFolder.getName());
-            }
-        }
-
+    Rotation defineRotation(List<Match> maps) {
         if (maps.isEmpty()) {
-            plugin.getLogger().log(Level.WARNING, "No valid maps found in maps directory");
-        } else {
-            plugin.getLogger().log(Level.INFO, "Loaded " + maps.size() + " maps into rotation");
+            Variorum.get().getLogger().warning("No valid maps found in rotation file, using default rotation");
+            throw new IllegalStateException("No valid maps found in rotation file");
         }
 
+        Variorum.get().getLogger().info("Loaded " + maps.size() + " maps from rotation file");
         return new Rotation(maps);
+    }
+
+    @Nullable Match createMatch(VariorumMap map) {
+        try {
+            return this.factory.create(map);
+        } catch (Exception e) {
+            Variorum.get().getLogger().log(Level.WARNING, "Failed to create match for map " + map.getName(), e);
+        }
+        return null;
+    }
+
+    @Nullable Match createMatch(String name) {
+        Optional<VariorumMap> map = this.mapManager.getMapByName(name);
+        if (map.isEmpty()) {
+            Variorum.get().getLogger().warning("Map " + name + " not found");
+            return null;
+        }
+        return this.createMatch(map.get());
     }
 }

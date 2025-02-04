@@ -1,7 +1,6 @@
 package dev.alexanderdiaz.variorum.map;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
@@ -18,22 +17,12 @@ public class VariorumMapFactory {
     public static VariorumMap load(File file) {
         try {
             Document doc = createSecureDocumentBuilder().parse(file);
-            return createMapFromDocument(doc);
+            MapSource source = new MapSource(file.getParentFile(), file);
+            return createMapFromDocument(doc, source);
         } catch (MapParseException e) {
             throw e;
         } catch (Exception e) {
             throw new MapLoadException("Failed to parse map file: " + file.getName(), e);
-        }
-    }
-
-    public static VariorumMap load(InputStream inputStream) {
-        try {
-            Document doc = createSecureDocumentBuilder().parse(inputStream);
-            return createMapFromDocument(doc);
-        } catch (MapParseException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new MapLoadException("Failed to parse map from input stream", e);
         }
     }
 
@@ -44,7 +33,7 @@ public class VariorumMapFactory {
         return factory.newDocumentBuilder();
     }
 
-    private static VariorumMap createMapFromDocument(Document doc) {
+    private static VariorumMap createMapFromDocument(Document doc, MapSource source) {
         doc.getDocumentElement().normalize();
         Element mapElement = doc.getDocumentElement();
 
@@ -56,6 +45,7 @@ public class VariorumMapFactory {
 
         try {
             builder.name(getRequiredAttribute(mapElement, "name", "document"));
+            builder.source(source);
 
             try {
                 builder.authors(createAuthors(doc));

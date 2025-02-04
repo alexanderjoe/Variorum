@@ -82,6 +82,7 @@ public class TeamsModule implements Module {
 
         org.bukkit.scoreboard.Team scoreboardTeam = scoreboard.getTeam(team.id());
         if (scoreboardTeam == null) {
+            Variorum.get().getLogger().warning("Team " + team.id() + " not found in scoreboard");
             scoreboardTeam = scoreboard.registerNewTeam(team.id());
             scoreboardTeam.color(team.textColor());
             scoreboardTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, OptionStatus.ALWAYS);

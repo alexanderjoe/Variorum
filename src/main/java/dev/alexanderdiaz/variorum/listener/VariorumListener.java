@@ -11,7 +11,9 @@ import org.bukkit.event.player.PlayerLoginEvent;
 public class VariorumListener implements Listener {
     @EventHandler
     public void onMatchOpenEvent(MatchOpenEvent event) {
-        Variorum.get().getLogger().info("Match Opened: " + event.getMatch().toString());
+        Variorum.get()
+                .getLogger()
+                .info("Match Opened: " + event.getMatch().getMap().getName());
     }
 
     @EventHandler

@@ -21,7 +21,7 @@ public class SpawnListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerLogin(PlayerLoginEvent event) {
-        if (!module.getMatch().isActive()) {
+        if (!module.getMatch().isLoaded()) {
             event.disallow(PlayerLoginEvent.Result.KICK_OTHER, Component.text("The match is still loading!"));
         }
     }
