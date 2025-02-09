@@ -12,6 +12,7 @@ import dev.alexanderdiaz.variorum.module.results.ResultsFactory;
 import dev.alexanderdiaz.variorum.module.scoreboard.ScoreboardFactory;
 import dev.alexanderdiaz.variorum.module.spawn.SpawnFactory;
 import dev.alexanderdiaz.variorum.module.state.GameStateFactory;
+import dev.alexanderdiaz.variorum.module.stats.StatsFactory;
 import dev.alexanderdiaz.variorum.module.team.TeamsFactory;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
@@ -37,6 +38,7 @@ public class MatchFactory {
         register(ObjectivesFactory.class);
         register(ResultsFactory.class);
         register(ScoreboardFactory.class);
+        register(StatsFactory.class);
         register(LoadoutsFactory.class);
     }
 

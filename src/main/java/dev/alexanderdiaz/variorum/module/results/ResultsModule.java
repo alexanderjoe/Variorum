@@ -20,6 +20,7 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 public class ResultsModule implements Module {
@@ -148,7 +149,7 @@ public class ResultsModule implements Module {
     }
 
     private class ResultListener implements Listener {
-        @EventHandler
+        @EventHandler(priority = EventPriority.HIGHEST)
         public void onMonumentDestroyed(MonumentDestroyedEvent event) {
             if (resultDeclared) return;
 
