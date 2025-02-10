@@ -8,12 +8,14 @@ import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.chat.ChatFactory;
 import dev.alexanderdiaz.variorum.module.loadouts.LoadoutsFactory;
 import dev.alexanderdiaz.variorum.module.objectives.ObjectivesFactory;
+import dev.alexanderdiaz.variorum.module.regions.RegionFactory;
 import dev.alexanderdiaz.variorum.module.results.ResultsFactory;
 import dev.alexanderdiaz.variorum.module.scoreboard.ScoreboardFactory;
 import dev.alexanderdiaz.variorum.module.spawn.SpawnFactory;
 import dev.alexanderdiaz.variorum.module.state.GameStateFactory;
 import dev.alexanderdiaz.variorum.module.stats.StatsFactory;
 import dev.alexanderdiaz.variorum.module.team.TeamsFactory;
+import dev.alexanderdiaz.variorum.module.zones.ZoneFactory;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,13 +27,17 @@ public class MatchFactory {
     private final Map<Class<? extends ModuleFactory<?>>, ModuleFactory<?>> factories;
 
     @Getter
-    private List<ModuleFactory<?>> orderedFactories;
+    private final List<ModuleFactory<?>> orderedFactories;
 
     public MatchFactory() {
         this.factories = new HashMap<>();
         this.orderedFactories = new ArrayList<>();
 
+        // higher priority
+        register(RegionFactory.class);
         register(TeamsFactory.class);
+
+        // normal priority
         register(SpawnFactory.class);
         register(ChatFactory.class);
         register(GameStateFactory.class);
@@ -40,6 +46,7 @@ public class MatchFactory {
         register(ScoreboardFactory.class);
         register(StatsFactory.class);
         register(LoadoutsFactory.class);
+        register(ZoneFactory.class);
     }
 
     public <F extends ModuleFactory<M>, M extends Module> void register(Class<F> clazz) {

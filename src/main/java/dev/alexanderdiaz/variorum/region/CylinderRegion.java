@@ -15,6 +15,9 @@ public class CylinderRegion extends AbstractRegion {
     private final double height;
 
     public CylinderRegion(Vector center, double radius, double height) {
+        if (radius <= 0) {
+            throw new IllegalArgumentException("Radius must be positive");
+        }
         this.center = center.clone();
         this.radius = radius;
         this.radiusSquared = radius * radius;

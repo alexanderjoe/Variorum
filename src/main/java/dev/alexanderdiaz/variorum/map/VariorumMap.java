@@ -3,6 +3,7 @@ package dev.alexanderdiaz.variorum.map;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import org.bukkit.util.Vector;
 
 @Data
 @Builder
@@ -57,6 +58,11 @@ public class VariorumMap {
                     .y(Double.parseDouble(parts[1].trim()))
                     .z(Double.parseDouble(parts[2].trim()))
                     .build();
+        }
+
+        public static Vector getVector(String coord) {
+            Point point = fromString(coord);
+            return new Vector(point.getX(), point.getY(), point.getZ());
         }
 
         @Override

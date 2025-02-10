@@ -11,9 +11,11 @@ import org.bukkit.util.Vector;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class RegionFactory {
-    private static final Map<Method, Collection<String>> PARSERS = NamedParsers.getMethods(RegionFactory.class);
-    private static final RegionFactory INSTANCE = new RegionFactory();
+@Deprecated
+public class RegionFactoryDeprecated {
+    private static final Map<Method, Collection<String>> PARSERS =
+            NamedParsers.getMethods(RegionFactoryDeprecated.class);
+    private static final RegionFactoryDeprecated INSTANCE = new RegionFactoryDeprecated();
 
     /**
      * Parses a region from an XML element if it exists.

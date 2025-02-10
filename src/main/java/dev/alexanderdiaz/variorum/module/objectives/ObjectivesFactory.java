@@ -7,10 +7,11 @@ import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.objectives.monument.MonumentObjective;
 import dev.alexanderdiaz.variorum.module.objectives.wool.WoolObjective;
+import dev.alexanderdiaz.variorum.module.regions.RegionFactory;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
 import dev.alexanderdiaz.variorum.region.Region;
-import dev.alexanderdiaz.variorum.region.RegionFactory;
+import dev.alexanderdiaz.variorum.region.RegionFactoryDeprecated;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParser;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParsers;
 import java.lang.reflect.Method;
@@ -145,7 +146,9 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
                     "objectives.wools",
                     getElementContext(destinationElement));
         }
-        Region destination = RegionFactory.parse(regionElement);
+        RegionFactory regionFactory = match.getFactory().getFactory(RegionFactory.class);
+        Region destination = regionFactory.parseRegion(match, regionElement);
+//        Region destination = RegionFactoryDeprecated.parse(regionElement);
 
         Element sourceElement =
                 (Element) woolElement.getElementsByTagName("source").item(0);
@@ -154,7 +157,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
             Element sourceRegionElement =
                     (Element) sourceElement.getElementsByTagName("*").item(0);
             if (sourceRegionElement != null) {
-                source = Optional.of(RegionFactory.parse(sourceRegionElement));
+                source = Optional.of(regionFactory.parseRegion(match, sourceRegionElement));
             }
         }
 
@@ -188,7 +191,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
             Element monumentElement = (Element) monuments.item(j);
             String name = monumentElement.getAttribute("name");
 
-            Region region = RegionFactory.parseRequired(monumentElement, "region");
+            Region region = RegionFactoryDeprecated.parseRequired(monumentElement, "region");
 
             MonumentObjective monument = new MonumentObjective(match, name, team, region, allowedMaterials);
             module.addObjective(monument);

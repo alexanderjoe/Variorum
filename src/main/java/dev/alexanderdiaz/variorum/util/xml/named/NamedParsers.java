@@ -2,6 +2,7 @@ package dev.alexanderdiaz.variorum.util.xml.named;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import dev.alexanderdiaz.variorum.map.MapParseException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
@@ -77,10 +78,14 @@ public final class NamedParsers {
             try {
                 return (T) entry.getKey().invoke(instance, fullArgs);
             } catch (Exception e) {
-                throw new IllegalArgumentException("Failed to invoke parser for " + element.getTagName(), e);
+                throw new MapParseException(
+                        "Failed to parse element: " + element.getTagName(),
+                        element.getTagName(),
+                        element.getTextContent(),
+                        e);
             }
         }
 
-        throw new IllegalArgumentException(errorMessage);
+        throw new MapParseException(errorMessage, element.getTagName(), element.getTextContent());
     }
 }

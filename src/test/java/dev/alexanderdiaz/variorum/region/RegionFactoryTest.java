@@ -37,7 +37,7 @@ class RegionFactoryTest {
 
         for (int i = 0; i < regionNode.getLength(); i++) {
             Element regionElement = (Element) regionNode.item(i);
-            Region region = RegionFactory.parse(regionElement);
+            Region region = RegionFactoryDeprecated.parse(regionElement);
             regions.add(region);
         }
 
@@ -51,7 +51,7 @@ class RegionFactoryTest {
     void testThatFactoryFailsToParseRegionGivenInvalidInputXml() {
         Element invalidRegion =
                 (Element) root.getElementsByTagName("invalid-region").item(0);
-        assertThrows(IllegalArgumentException.class, () -> RegionFactory.parse(invalidRegion));
+        assertThrows(IllegalArgumentException.class, () -> RegionFactoryDeprecated.parse(invalidRegion));
     }
 
     private static DocumentBuilder createSecureDocumentBuilder() throws Exception {
