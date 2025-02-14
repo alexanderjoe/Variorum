@@ -1,22 +1,17 @@
 package dev.alexanderdiaz.variorum.module.regions;
 
-import dev.alexanderdiaz.variorum.map.MapParseException;
 import dev.alexanderdiaz.variorum.map.VariorumMap.Point;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.match.registry.RegisteredObject;
 import dev.alexanderdiaz.variorum.module.Module;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.region.*;
-import dev.alexanderdiaz.variorum.util.xml.XmlList;
+import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParser;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParsers;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.bukkit.util.Vector;
-import org.w3c.dom.Element;
 
 /*
  * This factory does not itself create or load a module, but rather loads the regions
@@ -30,91 +25,93 @@ public class RegionFactory implements ModuleFactory<Module> {
     }
 
     @Override
-    public Optional<Module> build(Match match, Element root) throws Exception {
-        XmlList regions = XmlList.of(root.getElementsByTagName("regions"));
+    public Optional<Module> build(Match match, XmlElement root) throws Exception {
+        List<XmlElement> regions = root.getChildren("regions");
 
-        if (regions.size() == 0) {
+        if (regions.isEmpty()) {
             return Optional.empty();
         }
 
-        for (Element regionElement : regions) {
-            String id = regionElement.getAttribute("id");
-            if (id.isEmpty()) {
-                throw new MapParseException("Region must have an id attribute");
-            }
-
-            Region region = parseRegion(match, regionElement);
-            match.getRegistry().register(new RegisteredObject<>(id, region));
+        for (XmlElement region : regions) {
+            String id = region.getRequiredAttribute("id");
+            Region parsedRegion = parseRegion(match, region);
+            match.getRegistry().register(new RegisteredObject<>(id, parsedRegion));
         }
 
         return Optional.empty();
     }
 
-    public Region parseRegion(Match match, Element element) {
+    public Region parseRegion(Match match, XmlElement element) {
+        return NamedParsers.invoke(this, PARSERS, element, "Unknown region type.", new Object[] {match});
+    }
+
+    public <T extends Region> Region parseRegionAs(Match match, XmlElement element, Class<T> type) {
+        if (element.getName().equalsIgnoreCase("region")
+                && element.getChildren().isEmpty()) {
+            return parseRegionId(element, match);
+        }
+        // place to add additional region parsing logic in the future like joins
+
         return NamedParsers.invoke(this, PARSERS, element, "Unknown region type.", new Object[] {match});
     }
 
     @NamedParser("region")
-    public Region parseRegionId(Element element, Match match) {
-        String id = element.getAttribute("id");
-        if (id.isEmpty()) {
-            throw new MapParseException("Region must have an id attribute");
-        }
-
+    public Region parseRegionId(XmlElement element, Match match) {
+        String id = element.getRequiredAttribute("id");
         return match.getRegistry().get(Region.class, id, true).get();
     }
 
     @NamedParser("block")
-    public Region parseBlock(Element element, Match match) {
+    public Region parseBlock(XmlElement element, Match match) {
         Vector vector = Point.getVector(element.getTextContent().trim());
         return new BlockRegion(vector);
     }
 
     @NamedParser("point")
-    public Region parsePoint(Element element, Match match) {
+    public Region parsePoint(XmlElement element, Match match) {
         Vector vector = Point.getVector(element.getTextContent().trim());
         return new PointRegion(vector);
     }
 
     @NamedParser("box")
-    public Region parseBox(Element element, Match match) {
-        Vector center = Point.getVector(element.getAttribute("center"));
-        int x = Integer.parseInt(element.getAttribute("x"));
-        int y = Integer.parseInt(element.getAttribute("y"));
-        int z = Integer.parseInt(element.getAttribute("z"));
+    public Region parseBox(XmlElement element, Match match) {
+        Vector center = Point.getVector(element.getRequiredAttribute("center"));
+        int x = Integer.parseInt(element.getRequiredAttribute("x"));
+        int y = Integer.parseInt(element.getRequiredAttribute("y"));
+        int z = Integer.parseInt(element.getRequiredAttribute("z"));
 
         return new BoxRegion(center, x, y, z);
     }
 
     @NamedParser("cuboid")
-    public Region parseCuboid(Element element, Match match) {
-        Vector min = Point.getVector(element.getAttribute("min"));
-        Vector max = Point.getVector(element.getAttribute("max"));
+    public Region parseCuboid(XmlElement element, Match match) {
+        Vector min = Point.getVector(element.getRequiredAttribute("min"));
+        Vector max = Point.getVector(element.getRequiredAttribute("max"));
 
         return new CuboidRegion(min, max);
     }
 
     @NamedParser("circle")
-    public Region parseCircle(Element element, Match match) {
-        Vector center = Point.getVector(element.getAttribute("center"));
-        int radius = Integer.parseInt(element.getAttribute("radius"));
+    public Region parseCircle(XmlElement element, Match match) {
+        Vector center = Point.getVector(element.getRequiredAttribute("center"));
+        int radius = Integer.parseInt(element.getRequiredAttribute("radius"));
 
         return new CircleRegion(center, radius);
     }
 
     @NamedParser("cylinder")
-    public Region parseCylinder(Element element, Match match) {
-        Vector center = Point.getVector(element.getAttribute("center"));
-        int radius = Integer.parseInt(element.getAttribute("radius"));
-        int height = Integer.parseInt(element.getAttribute("height"));
+    public Region parseCylinder(XmlElement element, Match match) {
+        Vector center = Point.getVector(element.getRequiredAttribute("center"));
+        int radius = Integer.parseInt(element.getRequiredAttribute("radius"));
+        int height = Integer.parseInt(element.getRequiredAttribute("height"));
 
         return new CylinderRegion(center, radius, height);
     }
 
     @NamedParser("sphere")
-    public Region parseSphere(Element element, Match match) {
-        Vector center = Point.getVector(element.getAttribute("center"));
-        int radius = Integer.parseInt(element.getAttribute("radius"));
+    public Region parseSphere(XmlElement element, Match match) {
+        Vector center = Point.getVector(element.getRequiredAttribute("center"));
+        int radius = Integer.parseInt(element.getRequiredAttribute("radius"));
 
         return new SphereRegion(center, radius);
     }

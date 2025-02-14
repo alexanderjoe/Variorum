@@ -207,10 +207,6 @@ public class Match {
         modules.clear();
         orderedModules.clear();
 
-        // TODO: was this needed?
-        //        world.getPlayers()
-        //                .forEach(player -> player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation()));
-
         this.loaded = false;
     }
 

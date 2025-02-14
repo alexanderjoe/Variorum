@@ -12,8 +12,8 @@ import dev.alexanderdiaz.variorum.region.BoxRegion;
 import dev.alexanderdiaz.variorum.region.CylinderRegion;
 import dev.alexanderdiaz.variorum.region.Region;
 import dev.alexanderdiaz.variorum.region.SphereRegion;
+import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,11 +23,10 @@ import org.bukkit.util.Vector;
 import org.junit.jupiter.api.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 @DisplayName("Module-RegionFactory")
 class RegionFactoryTest {
-    private static Element root;
+    private static XmlElement root;
     private RegionFactory regionFactory;
     private Match mockMatch;
     private MatchRegistry mockRegistry;
@@ -38,7 +37,7 @@ class RegionFactoryTest {
             File file = new File("src/test/resources/region-test.xml");
             Document doc = createSecureDocumentBuilder().parse(file);
             doc.getDocumentElement().normalize();
-            root = doc.getDocumentElement();
+            root = new XmlElement(doc.getDocumentElement());
         }
 
         regionFactory = new RegionFactory();
@@ -56,14 +55,9 @@ class RegionFactoryTest {
             when(mockRegistry.get(eq(Region.class), anyString(), anyBoolean()))
                     .thenAnswer(invocation -> Optional.of(new SphereRegion(new Vector(0, 64, 0), 4)));
 
-            NodeList regionNode = root.getElementsByTagName("region");
-            List<Region> regions = new ArrayList<>();
-
-            for (int i = 0; i < regionNode.getLength(); i++) {
-                Element regionElement = (Element) regionNode.item(i);
-                Region region = regionFactory.parseRegion(mockMatch, regionElement);
-                regions.add(region);
-            }
+            List<Region> regions = root.getChildrenByTag("region").stream()
+                    .map(element -> regionFactory.parseRegion(mockMatch, element))
+                    .toList();
 
             assertEquals(7, regions.size(), "Wrong number of regions parsed");
             var last = regions.getLast();
@@ -74,16 +68,17 @@ class RegionFactoryTest {
         @Test
         @DisplayName("Successfully parses individual region types")
         void testParseIndividualRegionTypes() throws Exception {
-            Element sphereElement = createTestElement("sphere", Map.of("center", "0,64,0", "radius", "4"));
+            XmlElement sphereElement = createTestElement("sphere", Map.of("center", "0,64,0", "radius", "4"));
             Region sphere = regionFactory.parseRegion(mockMatch, sphereElement);
             assertInstanceOf(SphereRegion.class, sphere, "Should parse sphere region");
 
-            Element cylinderElement =
+            XmlElement cylinderElement =
                     createTestElement("cylinder", Map.of("center", "0,64,0", "radius", "4", "height", "10"));
             Region cylinder = regionFactory.parseRegion(mockMatch, cylinderElement);
             assertInstanceOf(CylinderRegion.class, cylinder, "Should parse cylinder region");
 
-            Element boxElement = createTestElement("box", Map.of("center", "0,64,0", "x", "10", "y", "20", "z", "30"));
+            XmlElement boxElement =
+                    createTestElement("box", Map.of("center", "0,64,0", "x", "10", "y", "20", "z", "30"));
             Region box = regionFactory.parseRegion(mockMatch, boxElement);
             assertInstanceOf(BoxRegion.class, box, "Should parse box region");
         }
@@ -91,7 +86,7 @@ class RegionFactoryTest {
         @Test
         @DisplayName("Throws exception for missing required attributes")
         void testThrowsExceptionForMissingAttributes() {
-            Element invalidElement = createTestElement("sphere", Map.of());
+            XmlElement invalidElement = createTestElement("sphere", Map.of());
             assertThrows(
                     MapParseException.class,
                     () -> regionFactory.parseRegion(mockMatch, invalidElement),
@@ -101,8 +96,7 @@ class RegionFactoryTest {
         @Test
         @DisplayName("Throws exception for invalid region type")
         void testThrowsExceptionForInvalidRegionType() {
-            Element invalidRegion =
-                    (Element) root.getElementsByTagName("invalid-region").item(0);
+            XmlElement invalidRegion = root.getFirstChild("invalid-region").orElseThrow();
             assertThrows(MapParseException.class, () -> regionFactory.parseRegion(mockMatch, invalidRegion));
         }
     }
@@ -113,7 +107,7 @@ class RegionFactoryTest {
         @Test
         @DisplayName("Handles negative values correctly")
         void testHandlesNegativeValues() throws Exception {
-            Element element = createTestElement("sphere", Map.of("center", "-10,-20,-30", "radius", "5"));
+            XmlElement element = createTestElement("sphere", Map.of("center", "-10,-20,-30", "radius", "5"));
             Region region = regionFactory.parseRegion(mockMatch, element);
 
             assertInstanceOf(SphereRegion.class, region);
@@ -124,7 +118,8 @@ class RegionFactoryTest {
         @Test
         @DisplayName("Handles weirdly formatted values")
         void testHandlesWeirdFormattedValues() throws Exception {
-            Element element = createTestElement("sphere", Map.of("center", " 1551   , -289,      0283  ", "radius", "5"));
+            XmlElement element =
+                    createTestElement("sphere", Map.of("center", " 1551   , -289,      0283  ", "radius", "5"));
             Region region = regionFactory.parseRegion(mockMatch, element);
 
             assertInstanceOf(SphereRegion.class, region);
@@ -135,7 +130,7 @@ class RegionFactoryTest {
         @Test
         @DisplayName("Validates radius is positive")
         void testValidatesPositiveRadius() {
-            Element element = createTestElement("sphere", Map.of("center", "0,0,0", "radius", "-5"));
+            XmlElement element = createTestElement("sphere", Map.of("center", "0,0,0", "radius", "-5"));
 
             var ex = assertThrows(
                     MapParseException.class,
@@ -155,7 +150,7 @@ class RegionFactoryTest {
         return factory.newDocumentBuilder();
     }
 
-    private Element createTestElement(String type, Map<String, String> attributes) {
+    private XmlElement createTestElement(String type, Map<String, String> attributes) {
         Document doc = null;
         try {
             doc = createSecureDocumentBuilder().newDocument();
@@ -165,6 +160,6 @@ class RegionFactoryTest {
 
         Element element = doc.createElement(type);
         attributes.forEach(element::setAttribute);
-        return element;
+        return new XmlElement(element);
     }
 }

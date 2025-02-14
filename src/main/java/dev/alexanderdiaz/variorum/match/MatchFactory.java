@@ -16,12 +16,12 @@ import dev.alexanderdiaz.variorum.module.state.GameStateFactory;
 import dev.alexanderdiaz.variorum.module.stats.StatsFactory;
 import dev.alexanderdiaz.variorum.module.team.TeamsFactory;
 import dev.alexanderdiaz.variorum.module.zones.ZoneFactory;
+import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.Getter;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class MatchFactory {
     private final Map<Class<? extends ModuleFactory<?>>, ModuleFactory<?>> factories;
@@ -77,7 +77,7 @@ public class MatchFactory {
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         Document document = builder.parse(map.getSource().getXmlFile());
-        Element root = document.getDocumentElement();
+        XmlElement root = new XmlElement(document.getDocumentElement());
 
         Match match = new Match(map, this);
 

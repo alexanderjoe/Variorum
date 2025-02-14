@@ -6,26 +6,25 @@ import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutArmor;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutEffect;
 import dev.alexanderdiaz.variorum.module.loadouts.types.LoadoutItem;
+import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.util.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class LoadoutsFactory implements ModuleFactory<LoadoutsModule> {
     @Override
-    public Optional<LoadoutsModule> build(Match match, Element root) {
-        NodeList loadoutsRoot = root.getElementsByTagName("loadouts");
-        if (loadoutsRoot.getLength() == 0) {
+    public Optional<LoadoutsModule> build(Match match, XmlElement root) {
+        List<XmlElement> loadouts = root.getChildren("loadouts");
+
+        if (loadouts.isEmpty()) {
             return Optional.empty();
         }
 
-        NodeList loadoutNodes = ((Element) loadoutsRoot.item(0)).getElementsByTagName("loadout");
+        for (XmlElement loadout : loadouts) {
+            String id = loadout.getRequiredAttribute("id");
+            Loadout parsedLoadout = parseLoadout(id, loadout.getElement());
 
-        for (int i = 0; i < loadoutNodes.getLength(); i++) {
-            Element loadoutElement = (Element) loadoutNodes.item(i);
-            String id = loadoutElement.getAttribute("id");
-            Loadout loadout = parseLoadout(id, loadoutElement);
-
-            match.getRegistry().register(new RegisteredObject<>(id, loadout));
+            match.getRegistry().register(new RegisteredObject<>(id, parsedLoadout));
         }
 
         return Optional.of(new LoadoutsModule(match));

@@ -67,11 +67,9 @@ public class RotationCommands {
         Rotation rotation = mm.getRotation();
         List<Match> matches = rotation.getMapQueue();
 
-        // Create paginator with same page size as used in rotation command
         Paginator<Match> paginator = new Paginator<>(matches, 5);
         int totalPages = paginator.getTotalPages();
 
-        // Generate list of page numbers and filter based on input
         return java.util.stream.IntStream.rangeClosed(1, totalPages)
                 .mapToObj(String::valueOf)
                 .filter(page -> page.startsWith(input))
@@ -109,11 +107,9 @@ public class RotationCommands {
         MapManager mm = plugin.getMapManager();
         List<VariorumMap> maps = mm.getAllMaps().values().stream().toList();
 
-        // Create paginator with same page size as used in rotation command
         Paginator<VariorumMap> paginator = new Paginator<>(maps, 5);
         int totalPages = paginator.getTotalPages();
 
-        // Generate list of page numbers and filter based on input
         return java.util.stream.IntStream.rangeClosed(1, totalPages)
                 .mapToObj(String::valueOf)
                 .filter(page -> page.startsWith(input))

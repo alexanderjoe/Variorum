@@ -1,8 +1,8 @@
 package dev.alexanderdiaz.variorum.module;
 
 import dev.alexanderdiaz.variorum.match.Match;
+import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.util.Optional;
-import org.w3c.dom.Element;
 
 /**
  * Interface for factories that create modules from XML configuration.
@@ -18,5 +18,5 @@ public interface ModuleFactory<T extends Module> {
      * @return An Optional containing the built module, or empty if the module should not be created
      * @throws Exception if there is an error building the module
      */
-    Optional<T> build(Match match, Element root) throws Exception;
+    Optional<T> build(Match match, XmlElement root) throws Exception;
 }

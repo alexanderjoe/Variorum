@@ -1,5 +1,7 @@
 package dev.alexanderdiaz.variorum.command;
 
+import static net.kyori.adventure.text.Component.text;
+
 import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.match.registry.RegisterableObject;
@@ -33,11 +35,11 @@ public class TestCommand {
     public void listObjectives(final CommandSender sender) {
         ObjectivesModule om = Variorum.getMatch().getRequiredModule(ObjectivesModule.class);
 
-        var message = Component.text("Objectives", NamedTextColor.YELLOW).append(Component.newline());
+        var message = text("Objectives", NamedTextColor.YELLOW).append(Component.newline());
 
         for (Objective o : om.getObjectives()) {
-            message = message.append(Component.text("    "))
-                    .append(Component.text(o.getName(), NamedTextColor.YELLOW).append(Component.newline()));
+            message = message.append(text("    "))
+                    .append(text(o.getName(), NamedTextColor.YELLOW).append(Component.newline()));
         }
 
         sender.sendMessage(message);
@@ -48,7 +50,7 @@ public class TestCommand {
     public void gmc(CommandSender sender) {
         Player player = (Player) sender;
         player.setGameMode(GameMode.CREATIVE);
-        player.sendMessage(Component.text("Set gamemode to creative", NamedTextColor.YELLOW));
+        player.sendMessage(text("Set gamemode to creative", NamedTextColor.YELLOW));
     }
 
     @Command("registry|mr")
@@ -58,18 +60,18 @@ public class TestCommand {
 
         Match match = Variorum.getMatch();
         if (match == null) {
-            sender.sendMessage(Component.text("No match found!", NamedTextColor.RED));
+            sender.sendMessage(text("No match found!", NamedTextColor.RED));
             return;
         }
-        Component message = Component.text("Objects in Match Registry", NamedTextColor.YELLOW)
-                .appendNewline();
+        Component message =
+                text("Objects in Match Registry", NamedTextColor.YELLOW).appendNewline();
 
         HashMap<String, RegisterableObject> objects = match.getRegistry().getRegistry();
         for (RegisterableObject o : objects.values()) {
-            message = message.append(Component.text("    "))
-                    .append(Component.text(o.getObject().getClass().getSimpleName(), NamedTextColor.WHITE))
-                    .append(Component.text(" - ", NamedTextColor.YELLOW))
-                    .append(Component.text("\"" + o.getId() + "\"", NamedTextColor.WHITE))
+            message = message.append(text("    "))
+                    .append(text(o.getObject().getClass().getSimpleName(), NamedTextColor.WHITE))
+                    .append(text(" - ", NamedTextColor.YELLOW))
+                    .append(text("\"" + o.getId() + "\"", NamedTextColor.WHITE))
                     .append(Component.newline());
         }
 
