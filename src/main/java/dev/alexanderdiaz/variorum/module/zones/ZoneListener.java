@@ -1,5 +1,6 @@
 package dev.alexanderdiaz.variorum.module.zones;
 
+import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.event.zone.ZoneEnterEvent;
 import dev.alexanderdiaz.variorum.event.zone.ZoneLeaveEvent;
 import dev.alexanderdiaz.variorum.util.Events;
@@ -19,7 +20,6 @@ public class ZoneListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
-        // Only check if the block position changed (not just looking around)
         Location from = event.getFrom();
         Location to = event.getTo();
         if (from.getBlockX() == to.getBlockX()
@@ -29,11 +29,13 @@ public class ZoneListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        handleZoneTransitions(player, from, to);
+        if (handleZoneTransitions(player, from, to)) {
+            event.setCancelled(true);
+            player.teleport(from);
+        }
     }
 
-    private void handleZoneTransitions(Player player, Location from, Location to) {
-        // Get all zones at the old and new positions
+    private boolean handleZoneTransitions(Player player, Location from, Location to) {
         var oldZones = module.getZones().values().stream()
                 .filter(zone -> zone.getRegion().contains(from))
                 .toList();
@@ -42,14 +44,36 @@ public class ZoneListener implements Listener {
                 .filter(zone -> zone.getRegion().contains(to))
                 .toList();
 
-        // Fire exit events for zones the player left
-        oldZones.stream()
-                .filter(zone -> !newZones.contains(zone))
-                .forEach(zone -> Events.call(new ZoneLeaveEvent(player, zone)));
+        boolean anyCancelled = false;
 
-        // Fire enter events for zones the player entered
-        newZones.stream()
-                .filter(zone -> !oldZones.contains(zone))
-                .forEach(zone -> Events.call(new ZoneEnterEvent(player, zone)));
+        // player leaves a zone they were in
+        for (Zone zone : oldZones) {
+            if (!newZones.contains(zone)) {
+                Variorum.get()
+                        .getLogger()
+                        .info(player.getName() + " has exited zone " + zone.getId()); // todo remove debug
+                ZoneLeaveEvent event = new ZoneLeaveEvent(player, zone);
+                Events.call(event);
+                if (event.isCancelled()) {
+                    anyCancelled = true;
+                }
+            }
+        }
+
+        // player enters new zones
+        for (Zone zone : newZones) {
+            if (!oldZones.contains(zone)) {
+                Variorum.get()
+                        .getLogger()
+                        .info(player.getName() + " has entered zone " + zone.getId()); // todo remove debug
+                ZoneEnterEvent event = new ZoneEnterEvent(player, zone);
+                Events.call(event);
+                if (event.isCancelled()) {
+                    anyCancelled = true;
+                }
+            }
+        }
+
+        return anyCancelled;
     }
 }

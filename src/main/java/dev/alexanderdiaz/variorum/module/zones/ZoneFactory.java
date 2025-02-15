@@ -2,20 +2,21 @@ package dev.alexanderdiaz.variorum.module.zones;
 
 import static dev.alexanderdiaz.variorum.map.VariorumMapFactory.getElementContext;
 
+import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.map.MapParseException;
 import dev.alexanderdiaz.variorum.match.Match;
+import dev.alexanderdiaz.variorum.match.registry.RegisteredObject;
 import dev.alexanderdiaz.variorum.module.FactoryUtil;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
+import dev.alexanderdiaz.variorum.module.team.Team;
+import dev.alexanderdiaz.variorum.module.team.TeamsModule;
+import dev.alexanderdiaz.variorum.module.zones.checks.EntryCheck;
 import dev.alexanderdiaz.variorum.region.Region;
 import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParser;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParsers;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import org.w3c.dom.Element;
+import java.util.*;
 
 public class ZoneFactory implements ModuleFactory<ZoneModule> {
     private static final Map<Method, Collection<String>> PARSERS = NamedParsers.getMethods(ZoneFactory.class);
@@ -31,6 +32,7 @@ public class ZoneFactory implements ModuleFactory<ZoneModule> {
 
         for (XmlElement zone : zones) {
             Zone parsedZone = parseZone(match, zone);
+            match.getRegistry().register(new RegisteredObject<>(parsedZone.getId(), parsedZone));
             module.addZone(parsedZone);
         }
 
@@ -41,37 +43,25 @@ public class ZoneFactory implements ModuleFactory<ZoneModule> {
         String id = element.getRequiredAttribute("id");
         XmlElement regionElement = element.getRequiredChild("region");
 
-        Region region;
-        Optional<String> regionRef = regionElement.getAttribute("ref");
-        if (regionRef.isPresent()) {
-            // TODO: Implement region reference lookup
-            throw new MapParseException(
-                    "Region references not yet implemented", "zones", getElementContext(regionElement.getElement()));
-        } else {
-            XmlElement inline = regionElement.getChildren().getFirst();
-            if (inline == null) {
-                throw new MapParseException(
-                        "Region element must contain a region definition",
-                        "zones",
-                        getElementContext(regionElement.getElement()));
-            }
-            region = FactoryUtil.resolveRequiredRegionAs(match, Region.class, Optional.empty(), Optional.of(inline));
-        }
+        Region region = FactoryUtil.resolveRequiredRegionAs(
+                match, Region.class, element.getAttribute("ref"), Optional.of(regionElement));
 
-        Zone zone = new Zone(id, region);
+        Variorum.get()
+                .getLogger()
+                .info("Found region " + region.getMin() + " " + region.getMax() + " c:" + region.getCenter());
 
-        // Parse checks
-        XmlElement checksElement = element.getRequiredChild("checks");
-        if (checksElement.getElement() != null) {
-            parseChecks(match, zone, checksElement);
+        Zone zone = new Zone(match, id, region);
+
+        List<XmlElement> checks = element.getChildren("checks");
+        if (!checks.isEmpty()) {
+            parseChecks(match, zone, checks);
         }
 
         return zone;
     }
 
-    private void parseChecks(Match match, Zone zone, XmlElement checksElement) {
-        List<XmlElement> checkNodes = checksElement.getChildren();
-        for (XmlElement checkElement : checkNodes) {
+    private void parseChecks(Match match, Zone zone, List<XmlElement> checksElement) {
+        for (XmlElement checkElement : checksElement) {
             try {
                 NamedParsers.invoke(
                         this, PARSERS, checkElement, "Unknown check type: " + checkElement.getName(), match, zone);
@@ -85,10 +75,36 @@ public class ZoneFactory implements ModuleFactory<ZoneModule> {
         }
     }
 
-    // Example check parser - we'll add more as we implement different check types
     @NamedParser("entry-check")
-    private void parseEntryCheck(Element element, Match match, Zone zone) {
-        // Entry check parsing will be implemented when we add entry checks
-        throw new UnsupportedOperationException("Entry checks not yet implemented");
+    private void parseEntryCheck(XmlElement element, Match match, Zone zone) {
+        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+
+        Set<Team> allowedTeams = new HashSet<>();
+        Set<Team> deniedTeams = new HashSet<>();
+
+        List<XmlElement> allowTeamNodes = element.getChildrenByTag("allow-team");
+        for (XmlElement teamElement : allowTeamNodes) {
+            String teamId = teamElement.getTextContent().trim();
+            match.getRegistry().get(Team.class, teamId, true).ifPresent(allowedTeams::add);
+            // teamsModule.getTeamById(teamId).ifPresent(allowedTeams::add);
+        }
+
+        List<XmlElement> denyTeamNodes = element.getChildrenByTag("deny-team");
+        for (XmlElement teamElement : denyTeamNodes) {
+            String teamId = teamElement.getTextContent().trim();
+            match.getRegistry().get(Team.class, teamId, true).ifPresent(deniedTeams::add);
+            // teamsModule.getTeamById(teamId).ifPresent(deniedTeams::add);
+        }
+
+        String message = null;
+        Optional<XmlElement> messageElement = element.getFirstChildByTag("message");
+        if (messageElement.isPresent()) {
+            message = messageElement.get().getTextContent().trim();
+        }
+
+        boolean denySpectators = element.getBooleanAttribute("deny-spectators", false);
+
+        EntryCheck check = new EntryCheck(zone, allowedTeams, deniedTeams, message, denySpectators);
+        zone.addCheck(check);
     }
 }

@@ -131,6 +131,10 @@ public class XmlElement {
                 .toList();
     }
 
+    public Optional<XmlElement> getFirstChildByTag(String tag) {
+        return Optional.of(getChildrenByTag(tag).getFirst());
+    }
+
     public Optional<XmlElement> getFirstChild(String tagName) {
         return getChildren(tagName).stream().findFirst();
     }

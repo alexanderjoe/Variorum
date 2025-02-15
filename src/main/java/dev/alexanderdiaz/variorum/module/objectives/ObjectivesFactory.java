@@ -86,7 +86,7 @@ public class ObjectivesFactory implements ModuleFactory<ObjectivesModule> {
             // name
             Optional<String> name = obj.getAttribute("name");
             if (name.isEmpty()) {
-                name = Optional.of(StringUtils.capitalize(color.name() + " Wool"));
+                name = Optional.of(StringUtils.capitalize(color.name().toLowerCase() + " Wool"));
             }
 
             try {

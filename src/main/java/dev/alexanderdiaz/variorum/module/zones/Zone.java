@@ -1,5 +1,6 @@
 package dev.alexanderdiaz.variorum.module.zones;
 
+import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.region.Region;
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,6 +10,9 @@ import org.bukkit.entity.Player;
 
 public class Zone {
     @Getter
+    private final Match match;
+
+    @Getter
     private final String id;
 
     @Getter
@@ -16,7 +20,8 @@ public class Zone {
 
     private final Set<ZoneCheck> checks;
 
-    public Zone(String id, Region region) {
+    public Zone(Match match, String id, Region region) {
+        this.match = match;
         this.id = id;
         this.region = region;
         this.checks = new HashSet<>();
