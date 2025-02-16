@@ -123,8 +123,6 @@ public class ScoreboardModule implements Module {
                             wool.getTeam().isPresent() && wool.getTeam().get().equals(team))
                     .toList();
 
-            woolObjectives.forEach(o -> Variorum.get().getLogger().info(o.getName()));
-
             if (!woolObjectives.isEmpty()) {
                 woolObjectives.forEach(wool -> {
                     contentBuilder.addDynamicLine(() -> {

@@ -9,12 +9,14 @@ import dev.alexanderdiaz.variorum.module.zones.Zone;
 import dev.alexanderdiaz.variorum.util.Events;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.ToString;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
+@ToString
 public class EntryCheck extends AbstractZoneCheck implements Listener {
     private final Set<Team> allowedTeams;
     private final Set<Team> deniedTeams;

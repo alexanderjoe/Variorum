@@ -2,7 +2,6 @@ package dev.alexanderdiaz.variorum.module.zones;
 
 import static dev.alexanderdiaz.variorum.map.VariorumMapFactory.getElementContext;
 
-import dev.alexanderdiaz.variorum.Variorum;
 import dev.alexanderdiaz.variorum.map.MapParseException;
 import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.match.registry.RegisteredObject;
@@ -10,6 +9,7 @@ import dev.alexanderdiaz.variorum.module.FactoryUtil;
 import dev.alexanderdiaz.variorum.module.ModuleFactory;
 import dev.alexanderdiaz.variorum.module.team.Team;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
+import dev.alexanderdiaz.variorum.module.zones.checks.BuildCheck;
 import dev.alexanderdiaz.variorum.module.zones.checks.EntryCheck;
 import dev.alexanderdiaz.variorum.region.Region;
 import dev.alexanderdiaz.variorum.util.xml.XmlElement;
@@ -17,6 +17,7 @@ import dev.alexanderdiaz.variorum.util.xml.named.NamedParser;
 import dev.alexanderdiaz.variorum.util.xml.named.NamedParsers;
 import java.lang.reflect.Method;
 import java.util.*;
+import org.bukkit.Material;
 
 public class ZoneFactory implements ModuleFactory<ZoneModule> {
     private static final Map<Method, Collection<String>> PARSERS = NamedParsers.getMethods(ZoneFactory.class);
@@ -41,14 +42,10 @@ public class ZoneFactory implements ModuleFactory<ZoneModule> {
 
     private Zone parseZone(Match match, XmlElement element) {
         String id = element.getRequiredAttribute("id");
-        XmlElement regionElement = element.getRequiredChild("region");
+        Optional<XmlElement> regionElement = element.getFirstChild("region");
 
-        Region region = FactoryUtil.resolveRequiredRegionAs(
-                match, Region.class, element.getAttribute("ref"), Optional.of(regionElement));
-
-        Variorum.get()
-                .getLogger()
-                .info("Found region " + region.getMin() + " " + region.getMax() + " c:" + region.getCenter());
+        Region region =
+                FactoryUtil.resolveRequiredRegionAs(match, Region.class, element.getAttribute("ref"), regionElement);
 
         Zone zone = new Zone(match, id, region);
 
@@ -86,14 +83,12 @@ public class ZoneFactory implements ModuleFactory<ZoneModule> {
         for (XmlElement teamElement : allowTeamNodes) {
             String teamId = teamElement.getTextContent().trim();
             match.getRegistry().get(Team.class, teamId, true).ifPresent(allowedTeams::add);
-            // teamsModule.getTeamById(teamId).ifPresent(allowedTeams::add);
         }
 
         List<XmlElement> denyTeamNodes = element.getChildrenByTag("deny-team");
         for (XmlElement teamElement : denyTeamNodes) {
             String teamId = teamElement.getTextContent().trim();
             match.getRegistry().get(Team.class, teamId, true).ifPresent(deniedTeams::add);
-            // teamsModule.getTeamById(teamId).ifPresent(deniedTeams::add);
         }
 
         String message = null;
@@ -105,6 +100,78 @@ public class ZoneFactory implements ModuleFactory<ZoneModule> {
         boolean denySpectators = element.getBooleanAttribute("deny-spectators", false);
 
         EntryCheck check = new EntryCheck(zone, allowedTeams, deniedTeams, message, denySpectators);
+        zone.addCheck(check);
+    }
+
+    @NamedParser("build-check")
+    public static void parseBuildCheck(XmlElement element, Match match, Zone zone) {
+        Set<Team> allowedTeams = new HashSet<>();
+        Set<Team> deniedTeams = new HashSet<>();
+        Set<Material> whitelist = new HashSet<>();
+        Set<Material> blacklist = new HashSet<>();
+
+        List<XmlElement> allowTeamNodes = element.getChildrenByTag("allow-team");
+        for (XmlElement teamElement : allowTeamNodes) {
+            String teamId = teamElement.getTextContent().trim();
+            match.getRegistry().get(Team.class, teamId, true).ifPresent(allowedTeams::add);
+        }
+
+        List<XmlElement> denyTeamNodes = element.getChildrenByTag("deny-team");
+        for (XmlElement teamElement : denyTeamNodes) {
+            String teamId = teamElement.getTextContent().trim();
+            match.getRegistry().get(Team.class, teamId, true).ifPresent(deniedTeams::add);
+        }
+
+        String breakMessage = null;
+        Optional<XmlElement> breakMessageElement = element.getFirstChildByTag("break-message");
+        if (breakMessageElement.isPresent()) {
+            breakMessage = breakMessageElement.get().getTextContent().trim();
+        }
+
+        String placeMessage = null;
+        Optional<XmlElement> placeMessageElement = element.getFirstChildByTag("place-message");
+        if (placeMessageElement.isPresent()) {
+            placeMessage = placeMessageElement.get().getTextContent().trim();
+        }
+
+        boolean allowBreak = element.getBooleanAttribute("allow-break", true);
+        boolean allowPlace = element.getBooleanAttribute("allow-place", true);
+
+        Optional<XmlElement> whitelistElement = element.getFirstChild("whitelist");
+        if (whitelistElement.isPresent()) {
+            List<XmlElement> materials = whitelistElement.get().getChildrenByTag("block");
+            for (XmlElement materialElement : materials) {
+                try {
+                    whitelist.add(Material.valueOf(
+                            materialElement.getTextContent().trim().toUpperCase()));
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+        }
+
+        // Parse blacklisted materials
+        Optional<XmlElement> blacklistElement = element.getFirstChild("blacklist");
+        if (blacklistElement.isPresent()) {
+            List<XmlElement> materials = blacklistElement.get().getChildrenByTag("block");
+            for (XmlElement materialElement : materials) {
+                try {
+                    blacklist.add(Material.valueOf(
+                            materialElement.getTextContent().trim().toUpperCase()));
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+        }
+
+        BuildCheck check = new BuildCheck(
+                zone,
+                allowedTeams,
+                deniedTeams,
+                breakMessage,
+                placeMessage,
+                allowBreak,
+                allowPlace,
+                whitelist,
+                blacklist);
         zone.addCheck(check);
     }
 }
