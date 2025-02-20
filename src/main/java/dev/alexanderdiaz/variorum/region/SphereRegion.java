@@ -13,6 +13,9 @@ public class SphereRegion extends AbstractRegion {
     private final double radiusSquared;
 
     public SphereRegion(Vector center, double radius) {
+        if (radius <= 0) {
+            throw new IllegalArgumentException("Radius must be positive");
+        }
         this.center = center.clone();
         this.radius = radius;
         this.radiusSquared = radius * radius;

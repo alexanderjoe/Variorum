@@ -2,13 +2,14 @@ package dev.alexanderdiaz.variorum.util.xml.named;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import dev.alexanderdiaz.variorum.map.MapParseException;
+import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 import javax.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.w3c.dom.Element;
 
 /**
  * Utility class for handling named XML parsers using reflection. This class helps manage methods annotated
@@ -61,7 +62,7 @@ public final class NamedParsers {
     public static <T> T invoke(
             Object instance,
             Map<Method, Collection<String>> parsers,
-            Element element,
+            XmlElement element,
             String errorMessage,
             Object... args) {
 
@@ -70,17 +71,21 @@ public final class NamedParsers {
         System.arraycopy(args, 0, fullArgs, 1, args.length);
 
         for (Map.Entry<Method, Collection<String>> entry : parsers.entrySet()) {
-            if (!entry.getValue().contains(element.getTagName())) {
+            if (!entry.getValue().contains(element.getName())) {
                 continue;
             }
 
             try {
                 return (T) entry.getKey().invoke(instance, fullArgs);
             } catch (Exception e) {
-                throw new IllegalArgumentException("Failed to invoke parser for " + element.getTagName(), e);
+                throw new MapParseException(
+                        "Failed to parse element: " + element.getName(),
+                        element.getName(),
+                        element.getTextContent(),
+                        e);
             }
         }
 
-        throw new IllegalArgumentException(errorMessage);
+        throw new MapParseException(errorMessage, element.getName(), element.getTextContent());
     }
 }

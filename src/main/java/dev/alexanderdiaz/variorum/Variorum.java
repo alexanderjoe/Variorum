@@ -54,7 +54,6 @@ public final class Variorum extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        // todo: map manager load map library
         String mapLibrary = get().getDataFolder().toPath().resolve("maps").toString();
         this.mapManager = new MapManager(mapLibrary);
         this.mapManager.loadLibrary();
