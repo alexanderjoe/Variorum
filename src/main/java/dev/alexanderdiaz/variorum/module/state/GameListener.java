@@ -4,33 +4,38 @@ import dev.alexanderdiaz.variorum.match.Match;
 import dev.alexanderdiaz.variorum.module.team.TeamsModule;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class GameListener implements Listener {
     private final Match match;
-    private final GameStateModule gameState;
+    private final GameStateModule gameStateModule;
 
-    public GameListener(Match match, GameStateModule gameState) {
+    public GameListener(Match match, GameStateModule gameStateModule) {
         this.match = match;
-        this.gameState = gameState;
+        this.gameStateModule = gameStateModule;
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        if (GameState.WAITING.equals(gameState.getCurrentState())) {
-            if (match.getWorld().getPlayers().size() >= GameStateModule.MIN_PLAYERS) {
-                gameState.setState(GameState.COUNTDOWN);
+    public void onPlayerJoin(PlayerJoinEvent event) {}
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (gameStateModule.getCurrentState() == GameState.PLAYING) {
+            if (gameStateModule.getPlayingHandler().shouldEndDueToPlayerCount()) {
+                gameStateModule.setState(GameState.ENDED);
             }
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!GameState.PLAYING.equals(gameState.getCurrentState())) {
+        if (gameStateModule.getCurrentState() != GameState.PLAYING) {
             event.setCancelled(true);
             return;
         }
@@ -41,9 +46,9 @@ public class GameListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (!GameState.PLAYING.equals(gameState.getCurrentState())) {
+        if (gameStateModule.getCurrentState() != GameState.PLAYING) {
             event.setCancelled(true);
             return;
         }
@@ -54,9 +59,9 @@ public class GameListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
-        if (!GameState.PLAYING.equals(gameState.getCurrentState()) && event.getEntity() instanceof Player) {
+        if (gameStateModule.getCurrentState() != GameState.PLAYING && event.getEntity() instanceof Player) {
             event.setCancelled(true);
         }
     }

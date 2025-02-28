@@ -83,6 +83,43 @@ public class GameStateCommands {
         }
     }
 
+    @Command("state")
+    @CommandDescription("Display the current game state")
+    @Permission("variorum.command.state")
+    public void showState(final CommandSender sender) {
+        Match match = Variorum.getMatch();
+        if (match == null) {
+            sender.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
+            return;
+        }
+
+        GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
+        GameState currentState = stateModule.getCurrentState();
+
+        sender.sendMessage(Component.text("Current game state: ", NamedTextColor.YELLOW)
+                .append(Component.text(currentState.name(), NamedTextColor.GREEN)));
+
+        switch (currentState) {
+            case WAITING:
+                int playerCount = match.getWorld().getPlayers().size();
+                sender.sendMessage(Component.text("Players: ", NamedTextColor.YELLOW)
+                        .append(Component.text(playerCount, NamedTextColor.WHITE)));
+                break;
+
+            case COUNTDOWN:
+                // If we had access to the countdown object, we could show remaining time
+                break;
+
+            case PLAYING:
+                // Could show match duration if we tracked it
+                break;
+
+            case ENDED:
+                // Could show time until map cycle
+                break;
+        }
+    }
+
     private int parseTimeString(String timeStr) {
         Pattern pattern = Pattern.compile("^(\\d+)(s|m|h)$");
         Matcher matcher = pattern.matcher(timeStr.toLowerCase());
