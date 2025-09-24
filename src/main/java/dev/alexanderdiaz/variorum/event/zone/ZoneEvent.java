@@ -9,36 +9,36 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class ZoneEvent extends Event implements Cancellable {
-    private static final HandlerList handlers = new HandlerList();
-    private boolean cancelled = false;
+  private static final HandlerList handlers = new HandlerList();
+  private boolean cancelled = false;
 
-    @Getter
-    protected final Player player;
+  @Getter
+  protected final Player player;
 
-    @Getter
-    protected final Zone zone;
+  @Getter
+  protected final Zone zone;
 
-    protected ZoneEvent(Player player, Zone zone) {
-        this.player = player;
-        this.zone = zone;
-    }
+  protected ZoneEvent(Player player, Zone zone) {
+    this.player = player;
+    this.zone = zone;
+  }
 
-    @Override
-    public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
+  @Override
+  public @NotNull HandlerList getHandlers() {
+    return handlers;
+  }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+  public static HandlerList getHandlerList() {
+    return handlers;
+  }
 
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
+  @Override
+  public boolean isCancelled() {
+    return cancelled;
+  }
 
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
-    }
+  @Override
+  public void setCancelled(boolean cancel) {
+    this.cancelled = cancel;
+  }
 }

@@ -9,33 +9,33 @@ import lombok.Getter;
 import org.bukkit.entity.Player;
 
 public class Zone {
-    @Getter
-    private final Match match;
+  @Getter
+  private final Match match;
 
-    @Getter
-    private final String id;
+  @Getter
+  private final String id;
 
-    @Getter
-    private final Region region;
+  @Getter
+  private final Region region;
 
-    private final Set<ZoneCheck> checks;
+  private final Set<ZoneCheck> checks;
 
-    public Zone(Match match, String id, Region region) {
-        this.match = match;
-        this.id = id;
-        this.region = region;
-        this.checks = new HashSet<>();
-    }
+  public Zone(Match match, String id, Region region) {
+    this.match = match;
+    this.id = id;
+    this.region = region;
+    this.checks = new HashSet<>();
+  }
 
-    public void addCheck(ZoneCheck check) {
-        checks.add(check);
-    }
+  public void addCheck(ZoneCheck check) {
+    checks.add(check);
+  }
 
-    public Collection<ZoneCheck> getChecks() {
-        return new HashSet<>(checks);
-    }
+  public Collection<ZoneCheck> getChecks() {
+    return new HashSet<>(checks);
+  }
 
-    public boolean contains(Player player) {
-        return region.contains(player.getLocation());
-    }
+  public boolean contains(Player player) {
+    return region.contains(player.getLocation());
+  }
 }

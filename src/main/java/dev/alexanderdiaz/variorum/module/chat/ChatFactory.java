@@ -6,8 +6,8 @@ import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.util.Optional;
 
 public class ChatFactory implements ModuleFactory<ChatModule> {
-    @Override
-    public Optional<ChatModule> build(Match match, XmlElement root) {
-        return Optional.of(new ChatModule(match));
-    }
+  @Override
+  public Optional<ChatModule> build(Match match, XmlElement root) {
+    return Optional.of(new ChatModule(match));
+  }
 }

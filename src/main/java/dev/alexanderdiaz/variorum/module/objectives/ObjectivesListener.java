@@ -8,14 +8,14 @@ import org.bukkit.event.Listener;
 
 @RequiredArgsConstructor
 public class ObjectivesListener implements Listener {
-    private final ObjectivesModule module;
+  private final ObjectivesModule module;
 
-    @EventHandler
-    public void onGameStateChange(GameStateChangeEvent event) {
-        if (event.getNewState() != GameState.PLAYING) {
-            module.getObjectives().forEach(Objective::disable);
-        } else {
-            module.getObjectives().forEach(Objective::enable);
-        }
+  @EventHandler
+  public void onGameStateChange(GameStateChangeEvent event) {
+    if (event.getNewState() != GameState.PLAYING) {
+      module.getObjectives().forEach(Objective::disable);
+    } else {
+      module.getObjectives().forEach(Objective::enable);
     }
+  }
 }

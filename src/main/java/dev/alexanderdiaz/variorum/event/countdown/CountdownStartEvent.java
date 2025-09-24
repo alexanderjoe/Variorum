@@ -6,10 +6,10 @@ import lombok.Getter;
 
 @Getter
 public class CountdownStartEvent extends CountdownEvent {
-    private final int startSeconds;
+  private final int startSeconds;
 
-    public CountdownStartEvent(Match match, Countdown countdown, int startSeconds) {
-        super(match, countdown);
-        this.startSeconds = startSeconds;
-    }
+  public CountdownStartEvent(Match match, Countdown countdown, int startSeconds) {
+    super(match, countdown);
+    this.startSeconds = startSeconds;
+  }
 }

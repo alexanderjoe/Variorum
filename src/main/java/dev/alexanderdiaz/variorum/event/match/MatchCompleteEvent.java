@@ -8,23 +8,24 @@ import org.bukkit.event.HandlerList;
 
 @Getter
 public class MatchCompleteEvent extends MatchEvent {
-    private static final HandlerList handlers = new HandlerList();
+  private static final HandlerList handlers = new HandlerList();
 
-    private final Collection<? extends Player> competitors;
-    private final Collection<Player> winners;
+  private final Collection<? extends Player> competitors;
+  private final Collection<Player> winners;
 
-    public MatchCompleteEvent(Match match, Collection<? extends Player> competitors, Collection<Player> winners) {
-        super(match);
-        this.competitors = competitors;
-        this.winners = winners;
-    }
+  public MatchCompleteEvent(
+      Match match, Collection<? extends Player> competitors, Collection<Player> winners) {
+    super(match);
+    this.competitors = competitors;
+    this.winners = winners;
+  }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+  public static HandlerList getHandlerList() {
+    return handlers;
+  }
 
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
-    }
+  @Override
+  public HandlerList getHandlers() {
+    return handlers;
+  }
 }

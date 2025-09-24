@@ -6,8 +6,8 @@ import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.util.Optional;
 
 public class GameStateFactory implements ModuleFactory<GameStateModule> {
-    @Override
-    public Optional<GameStateModule> build(Match match, XmlElement root) {
-        return Optional.of(new GameStateModule(match));
-    }
+  @Override
+  public Optional<GameStateModule> build(Match match, XmlElement root) {
+    return Optional.of(new GameStateModule(match));
+  }
 }

@@ -10,20 +10,20 @@ import org.bukkit.event.Listener;
 
 @RequiredArgsConstructor
 public class SpectatorListener implements Listener {
-    private final TeamsModule module;
+  private final TeamsModule module;
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerSpawn(PlayerSpawnStartEvent event) {
-        boolean isSpectator = event.getTeam().isEmpty();
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerSpawn(PlayerSpawnStartEvent event) {
+    boolean isSpectator = event.getTeam().isEmpty();
 
-        if (isSpectator) {
-            event.getPlayer().setGameMode(GameMode.SURVIVAL);
+    if (isSpectator) {
+      event.getPlayer().setGameMode(GameMode.SURVIVAL);
 
-            // run sync on the main thread -- weird bug where it wouldn't set
-            Variorum.get().getServer().getScheduler().runTask(Variorum.get(), () -> {
-                event.getPlayer().setAllowFlight(true);
-                event.getPlayer().setFlying(true);
-            });
-        }
+      // run sync on the main thread -- weird bug where it wouldn't set
+      Variorum.get().getServer().getScheduler().runTask(Variorum.get(), () -> {
+        event.getPlayer().setAllowFlight(true);
+        event.getPlayer().setFlying(true);
+      });
     }
+  }
 }

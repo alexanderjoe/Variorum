@@ -9,22 +9,22 @@ import org.jetbrains.annotations.NotNull;
 
 @Getter
 public abstract class CountdownEvent extends Event {
-    private static final HandlerList handlers = new HandlerList();
+  private static final HandlerList handlers = new HandlerList();
 
-    protected final Match match;
-    protected final Countdown countdown;
+  protected final Match match;
+  protected final Countdown countdown;
 
-    protected CountdownEvent(Match match, Countdown countdown) {
-        this.match = match;
-        this.countdown = countdown;
-    }
+  protected CountdownEvent(Match match, Countdown countdown) {
+    this.match = match;
+    this.countdown = countdown;
+  }
 
-    @Override
-    public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
+  @Override
+  public @NotNull HandlerList getHandlers() {
+    return handlers;
+  }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+  public static HandlerList getHandlerList() {
+    return handlers;
+  }
 }

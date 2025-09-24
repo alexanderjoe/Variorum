@@ -19,69 +19,70 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class ChatModule implements Module {
-    private final Match match;
-    private final Map<UUID, ChatChannel> playerChannels = new HashMap<>();
-    private ChatListener listener;
+  private final Match match;
+  private final Map<UUID, ChatChannel> playerChannels = new HashMap<>();
+  private ChatListener listener;
 
-    @Getter
-    private final List<ChatChannel> channels = new ArrayList<>();
+  @Getter
+  private final List<ChatChannel> channels = new ArrayList<>();
 
-    public ChatModule(Match match) {
-        this.match = match;
-        setupDefaultChannels();
+  public ChatModule(Match match) {
+    this.match = match;
+    setupDefaultChannels();
+  }
+
+  private void setupDefaultChannels() {
+    channels.add(new GlobalChannel());
+    match.getModule(TeamsModule.class).ifPresent(teamsModule -> {
+      teamsModule.getTeams().forEach(team -> channels.add(new TeamChannel(team)));
+    });
+  }
+
+  public Optional<ChatChannel> getPlayerChannel(Player player) {
+    return Optional.ofNullable(playerChannels.get(player.getUniqueId()));
+  }
+
+  public void setPlayerChannel(Player player, ChatChannel channel) {
+    playerChannels.put(player.getUniqueId(), channel);
+    player.sendMessage(
+        Component.text("Chat channel set to: " + channel.getName(), NamedTextColor.YELLOW));
+  }
+
+  @Override
+  public void enable() {
+    this.listener = new ChatListener();
+    Events.register(listener);
+  }
+
+  @Override
+  public void disable() {
+    if (listener != null) {
+      Events.unregister(listener);
+    }
+    playerChannels.clear();
+    channels.clear();
+  }
+
+  private class ChatListener implements Listener {
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerChat(AsyncChatEvent event) {
+      Player player = event.getPlayer();
+      String messageStr = ((net.kyori.adventure.text.TextComponent) event.message()).content();
+
+      ChatChannel channel = playerChannels.getOrDefault(
+          player.getUniqueId(),
+          channels.stream()
+              .filter(ch -> ch instanceof GlobalChannel)
+              .findFirst()
+              .orElseThrow());
+
+      event.setCancelled(true);
+      channel.sendMessage(player, messageStr);
     }
 
-    private void setupDefaultChannels() {
-        channels.add(new GlobalChannel());
-        match.getModule(TeamsModule.class).ifPresent(teamsModule -> {
-            teamsModule.getTeams().forEach(team -> channels.add(new TeamChannel(team)));
-        });
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+      playerChannels.remove(event.getPlayer().getUniqueId());
     }
-
-    public Optional<ChatChannel> getPlayerChannel(Player player) {
-        return Optional.ofNullable(playerChannels.get(player.getUniqueId()));
-    }
-
-    public void setPlayerChannel(Player player, ChatChannel channel) {
-        playerChannels.put(player.getUniqueId(), channel);
-        player.sendMessage(Component.text("Chat channel set to: " + channel.getName(), NamedTextColor.YELLOW));
-    }
-
-    @Override
-    public void enable() {
-        this.listener = new ChatListener();
-        Events.register(listener);
-    }
-
-    @Override
-    public void disable() {
-        if (listener != null) {
-            Events.unregister(listener);
-        }
-        playerChannels.clear();
-        channels.clear();
-    }
-
-    private class ChatListener implements Listener {
-        @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-        public void onPlayerChat(AsyncChatEvent event) {
-            Player player = event.getPlayer();
-            String messageStr = ((net.kyori.adventure.text.TextComponent) event.message()).content();
-
-            ChatChannel channel = playerChannels.getOrDefault(
-                    player.getUniqueId(),
-                    channels.stream()
-                            .filter(ch -> ch instanceof GlobalChannel)
-                            .findFirst()
-                            .orElseThrow());
-
-            event.setCancelled(true);
-            channel.sendMessage(player, messageStr);
-        }
-
-        @EventHandler
-        public void onPlayerQuit(PlayerQuitEvent event) {
-            playerChannels.remove(event.getPlayer().getUniqueId());
-        }
-    }
+  }
 }

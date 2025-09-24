@@ -26,207 +26,202 @@ import org.bukkit.generator.ChunkGenerator;
 
 @ToString
 public class Match {
-    @Getter
-    private final VariorumMap map;
+  @Getter
+  private final VariorumMap map;
 
-    @Getter
-    private final MatchFactory factory;
+  @Getter
+  private final MatchFactory factory;
 
-    @Getter
-    private final MatchRegistry registry;
+  @Getter
+  private final MatchRegistry registry;
 
-    @Getter
-    private final String id;
+  @Getter
+  private final String id;
 
-    @Getter
-    private boolean loaded = false;
+  @Getter
+  private boolean loaded = false;
 
-    private final Map<Class<? extends Module>, Module> modules;
-    private final List<Module> orderedModules;
+  private final Map<Class<? extends Module>, Module> modules;
+  private final List<Module> orderedModules;
 
-    public Match(VariorumMap map, MatchFactory factory) {
-        this.map = map;
-        this.factory = factory;
-        this.registry = new MatchRegistry(this);
-        this.modules = new HashMap<>();
-        this.orderedModules = new ArrayList<>();
-        this.id = UUID.randomUUID().toString().substring(0, 6);
-    }
+  public Match(VariorumMap map, MatchFactory factory) {
+    this.map = map;
+    this.factory = factory;
+    this.registry = new MatchRegistry(this);
+    this.modules = new HashMap<>();
+    this.orderedModules = new ArrayList<>();
+    this.id = UUID.randomUUID().toString().substring(0, 6);
+  }
 
-    public Collection<Player> getPlayers() {
-        return new ArrayList<>(Bukkit.getOnlinePlayers());
-    }
+  public Collection<Player> getPlayers() {
+    return new ArrayList<>(Bukkit.getOnlinePlayers());
+  }
 
-    /**
-     * Adds a module to the match.
-     *
-     * @param module The module to add
-     * @param <T> The type of module
-     * @return The added module
-     */
-    public <T extends Module> T addModule(T module) {
-        modules.put(module.getClass(), module);
-        orderedModules.add(module);
-        return module;
-    }
+  /**
+   * Adds a module to the match.
+   *
+   * @param module The module to add
+   * @param <T> The type of module
+   * @return The added module
+   */
+  public <T extends Module> T addModule(T module) {
+    modules.put(module.getClass(), module);
+    orderedModules.add(module);
+    return module;
+  }
 
-    /**
-     * Gets a module by its class.
-     *
-     * @param clazz The class of the module
-     * @param <T> The type of module
-     * @return The module if present
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends Module> Optional<T> getModule(Class<T> clazz) {
-        return Optional.ofNullable((T) modules.get(clazz));
-    }
+  /**
+   * Gets a module by its class.
+   *
+   * @param clazz The class of the module
+   * @param <T> The type of module
+   * @return The module if present
+   */
+  @SuppressWarnings("unchecked")
+  public <T extends Module> Optional<T> getModule(Class<T> clazz) {
+    return Optional.ofNullable((T) modules.get(clazz));
+  }
 
-    public <T extends Module> T getRequiredModule(Class<T> type) {
-        Optional<T> module = getModule(type);
-        Preconditions.checkArgument(module.isPresent(), "Required module is not present.");
-        return module.get();
-    }
+  public <T extends Module> T getRequiredModule(Class<T> type) {
+    Optional<T> module = getModule(type);
+    Preconditions.checkArgument(module.isPresent(), "Required module is not present.");
+    return module.get();
+  }
 
-    // TODO: relocate these eventually
-    private static final String MATCHES_FOLDER = "matches";
-    private static final String VOID_GENERATOR = "VoidWorldGenerator";
+  // TODO: relocate these eventually
+  private static final String MATCHES_FOLDER = "matches";
+  private static final String VOID_GENERATOR = "VoidWorldGenerator";
 
-    public void load() {
+  public void load() {
+    try {
+      String matchPath = MATCHES_FOLDER + "/" + this.id;
+
+      File sourceWorldFolder = map.getSource().getFolder();
+      if (!sourceWorldFolder.exists()) {
+        throw new IllegalStateException("Source world folder does not exist: " + sourceWorldFolder);
+      }
+
+      File mapConfig = new File(sourceWorldFolder, "map.xml");
+      if (!mapConfig.exists()) {
+        throw new IllegalStateException("Map config does not exist: " + mapConfig);
+      }
+      Variorum.get().getLogger().info("Found map config at: " + mapConfig.getAbsolutePath());
+
+      File targetWorldFolder = new File(Bukkit.getWorldContainer(), matchPath);
+      targetWorldFolder.getParentFile().mkdirs();
+
+      if (targetWorldFolder.exists()) {
+        Files.walk(targetWorldFolder.toPath()).sorted((a, b) -> -a.compareTo(b)).forEach(path -> {
+          try {
+            Files.delete(path);
+          } catch (IOException e) {
+            Variorum.get().getLogger().log(Level.WARNING, "Failed to delete: " + path, e);
+          }
+        });
+      }
+
+      Files.walk(sourceWorldFolder.toPath()).forEach(sourcePath -> {
+        Path relativePath = sourceWorldFolder.toPath().relativize(sourcePath);
+        Path targetPath = targetWorldFolder.toPath().resolve(relativePath);
         try {
-            String matchPath = MATCHES_FOLDER + "/" + this.id;
-
-            File sourceWorldFolder = map.getSource().getFolder();
-            if (!sourceWorldFolder.exists()) {
-                throw new IllegalStateException("Source world folder does not exist: " + sourceWorldFolder);
-            }
-
-            File mapConfig = new File(sourceWorldFolder, "map.xml");
-            if (!mapConfig.exists()) {
-                throw new IllegalStateException("Map config does not exist: " + mapConfig);
-            }
-            Variorum.get().getLogger().info("Found map config at: " + mapConfig.getAbsolutePath());
-
-            File targetWorldFolder = new File(Bukkit.getWorldContainer(), matchPath);
-            targetWorldFolder.getParentFile().mkdirs();
-
-            if (targetWorldFolder.exists()) {
-                Files.walk(targetWorldFolder.toPath())
-                        .sorted((a, b) -> -a.compareTo(b))
-                        .forEach(path -> {
-                            try {
-                                Files.delete(path);
-                            } catch (IOException e) {
-                                Variorum.get().getLogger().log(Level.WARNING, "Failed to delete: " + path, e);
-                            }
-                        });
-            }
-
-            Files.walk(sourceWorldFolder.toPath()).forEach(sourcePath -> {
-                Path relativePath = sourceWorldFolder.toPath().relativize(sourcePath);
-                Path targetPath = targetWorldFolder.toPath().resolve(relativePath);
-                try {
-                    if (Files.isDirectory(sourcePath)) {
-                        Files.createDirectories(targetPath);
-                    } else {
-                        Files.copy(sourcePath, targetPath);
-                    }
-                } catch (IOException e) {
-                    Variorum.get().getLogger().log(Level.WARNING, "Failed to copy: " + sourcePath, e);
-                }
-            });
-
-            File matchesDir = new File(Bukkit.getWorldContainer(), MATCHES_FOLDER);
-            if (!matchesDir.exists()) {
-                matchesDir.mkdirs();
-            }
-
-            WorldCreator worldCreator = new WorldCreator(matchPath);
-            ChunkGenerator voidGenerator =
-                    Bukkit.getPluginManager().getPlugin(VOID_GENERATOR).getDefaultWorldGenerator(matchPath, null);
-
-            worldCreator.generator(voidGenerator);
-            World world = worldCreator.createWorld();
-
-            if (world == null) {
-                throw new IllegalStateException("Failed to load world: " + matchPath);
-            }
-
-            world.setAutoSave(false);
-            world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
-            world.setGameRule(GameRule.DO_INSOMNIA, false);
-            world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
-
-            Variorum.get().getLogger().info("Loaded map config: " + map.getName());
-
-            MatchLoadEvent matchLoadEvent = new MatchLoadEvent(this);
-            Events.call(matchLoadEvent);
-
-            Variorum.get().getLogger().info("Successfully loaded map: " + this.map.getName() + " with ID: " + this.id);
-            this.loaded = true;
-        } catch (Exception e) {
-            Variorum.get().getLogger().log(Level.SEVERE, "Failed to load map: " + this.map.getName(), e);
+          if (Files.isDirectory(sourcePath)) {
+            Files.createDirectories(targetPath);
+          } else {
+            Files.copy(sourcePath, targetPath);
+          }
+        } catch (IOException e) {
+          Variorum.get().getLogger().log(Level.WARNING, "Failed to copy: " + sourcePath, e);
         }
+      });
+
+      File matchesDir = new File(Bukkit.getWorldContainer(), MATCHES_FOLDER);
+      if (!matchesDir.exists()) {
+        matchesDir.mkdirs();
+      }
+
+      WorldCreator worldCreator = new WorldCreator(matchPath);
+      ChunkGenerator voidGenerator = Bukkit.getPluginManager()
+          .getPlugin(VOID_GENERATOR)
+          .getDefaultWorldGenerator(matchPath, null);
+
+      worldCreator.generator(voidGenerator);
+      World world = worldCreator.createWorld();
+
+      if (world == null) {
+        throw new IllegalStateException("Failed to load world: " + matchPath);
+      }
+
+      world.setAutoSave(false);
+      world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+      world.setGameRule(GameRule.DO_INSOMNIA, false);
+      world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+
+      Variorum.get().getLogger().info("Loaded map config: " + map.getName());
+
+      MatchLoadEvent matchLoadEvent = new MatchLoadEvent(this);
+      Events.call(matchLoadEvent);
+
+      Variorum.get()
+          .getLogger()
+          .info("Successfully loaded map: " + this.map.getName() + " with ID: " + this.id);
+      this.loaded = true;
+    } catch (Exception e) {
+      Variorum.get().getLogger().log(Level.SEVERE, "Failed to load map: " + this.map.getName(), e);
+    }
+  }
+
+  /** Starts the match and enables all modules. */
+  public void start() {
+    for (Module module : orderedModules) {
+      try {
+        module.enable();
+      } catch (Exception e) {
+        Variorum.get()
+            .getLogger()
+            .log(Level.SEVERE, "Failed to enable module " + module.getClass().getSimpleName(), e);
+      }
     }
 
-    /** Starts the match and enables all modules. */
-    public void start() {
-        for (Module module : orderedModules) {
-            try {
-                module.enable();
-            } catch (Exception e) {
-                Variorum.get()
-                        .getLogger()
-                        .log(
-                                Level.SEVERE,
-                                "Failed to enable module " + module.getClass().getSimpleName(),
-                                e);
-            }
-        }
+    MatchOpenEvent moe = new MatchOpenEvent(this);
+    Events.call(moe);
+  }
 
-        MatchOpenEvent moe = new MatchOpenEvent(this);
-        Events.call(moe);
+  /** Ends the match, disables all modules, and cleans up resources. */
+  public void end() {
+    for (int i = orderedModules.size() - 1; i >= 0; i--) {
+      Module module = orderedModules.get(i);
+      try {
+        module.disable();
+      } catch (Exception e) {
+        Variorum.get()
+            .getLogger()
+            .log(Level.SEVERE, "Failed to disable module " + module.getClass().getSimpleName(), e);
+      }
     }
 
-    /** Ends the match, disables all modules, and cleans up resources. */
-    public void end() {
-        for (int i = orderedModules.size() - 1; i >= 0; i--) {
-            Module module = orderedModules.get(i);
-            try {
-                module.disable();
-            } catch (Exception e) {
-                Variorum.get()
-                        .getLogger()
-                        .log(
-                                Level.SEVERE,
-                                "Failed to disable module " + module.getClass().getSimpleName(),
-                                e);
-            }
-        }
+    modules.clear();
+    orderedModules.clear();
 
-        modules.clear();
-        orderedModules.clear();
+    this.loaded = false;
+  }
 
-        this.loaded = false;
+  public void unload() {
+    Bukkit.unloadWorld(getWorldName(), false);
+  }
+
+  private String getWorldName() {
+    return MATCHES_FOLDER + "/" + this.id;
+  }
+
+  public World getWorld() {
+    return Bukkit.getWorld(getWorldName());
+  }
+
+  public void broadcast(Component message) {
+    for (Player player : this.getPlayers()) {
+      player.sendMessage(message);
     }
 
-    public void unload() {
-        Bukkit.unloadWorld(getWorldName(), false);
-    }
-
-    private String getWorldName() {
-        return MATCHES_FOLDER + "/" + this.id;
-    }
-
-    public World getWorld() {
-        return Bukkit.getWorld(getWorldName());
-    }
-
-    public void broadcast(Component message) {
-        for (Player player : this.getPlayers()) {
-            player.sendMessage(message);
-        }
-
-        Bukkit.getConsoleSender().sendMessage(message);
-    }
+    Bukkit.getConsoleSender().sendMessage(message);
+  }
 }

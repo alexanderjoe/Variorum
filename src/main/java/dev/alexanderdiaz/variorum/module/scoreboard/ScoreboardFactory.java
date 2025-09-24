@@ -6,8 +6,8 @@ import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.util.Optional;
 
 public class ScoreboardFactory implements ModuleFactory<ScoreboardModule> {
-    @Override
-    public Optional<ScoreboardModule> build(Match match, XmlElement root) {
-        return Optional.of(new ScoreboardModule(match));
-    }
+  @Override
+  public Optional<ScoreboardModule> build(Match match, XmlElement root) {
+    return Optional.of(new ScoreboardModule(match));
+  }
 }

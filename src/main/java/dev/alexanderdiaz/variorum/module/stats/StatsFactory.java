@@ -6,8 +6,8 @@ import dev.alexanderdiaz.variorum.util.xml.XmlElement;
 import java.util.Optional;
 
 public class StatsFactory implements ModuleFactory<StatsModule> {
-    @Override
-    public Optional<StatsModule> build(Match match, XmlElement root) {
-        return Optional.of(new StatsModule(match));
-    }
+  @Override
+  public Optional<StatsModule> build(Match match, XmlElement root) {
+    return Optional.of(new StatsModule(match));
+  }
 }

@@ -14,41 +14,41 @@ import org.bukkit.event.Listener;
 
 @Getter
 public class ObjectivesModule implements Module {
-    private final Match match;
-    private final List<Objective> objectives;
-    private final List<Listener> listeners;
+  private final Match match;
+  private final List<Objective> objectives;
+  private final List<Listener> listeners;
 
-    public ObjectivesModule(Match match) {
-        this.match = match;
-        this.objectives = new ArrayList<>();
-        this.listeners = new ArrayList<>();
+  public ObjectivesModule(Match match) {
+    this.match = match;
+    this.objectives = new ArrayList<>();
+    this.listeners = new ArrayList<>();
+  }
+
+  public void addObjective(Objective objective) {
+    objectives.add(objective);
+  }
+
+  @Override
+  public void enable() {
+    this.listeners.add(new ObjectivesListener(this));
+
+    if (objectives.stream().anyMatch(objective -> objective instanceof MonumentObjective)) {
+      this.listeners.add(new MonumentListener(this));
     }
 
-    public void addObjective(Objective objective) {
-        objectives.add(objective);
+    if (objectives.stream().anyMatch(objective -> objective instanceof WoolObjective)) {
+      this.listeners.add(new WoolListener(this));
     }
 
-    @Override
-    public void enable() {
-        this.listeners.add(new ObjectivesListener(this));
+    objectives.forEach(Objective::enable);
+    this.listeners.forEach(Events::register);
+  }
 
-        if (objectives.stream().anyMatch(objective -> objective instanceof MonumentObjective)) {
-            this.listeners.add(new MonumentListener(this));
-        }
+  @Override
+  public void disable() {
+    this.listeners.forEach(Events::unregister);
 
-        if (objectives.stream().anyMatch(objective -> objective instanceof WoolObjective)) {
-            this.listeners.add(new WoolListener(this));
-        }
-
-        objectives.forEach(Objective::enable);
-        this.listeners.forEach(Events::register);
-    }
-
-    @Override
-    public void disable() {
-        this.listeners.forEach(Events::unregister);
-
-        objectives.forEach(Objective::disable);
-        objectives.clear();
-    }
+    objectives.forEach(Objective::disable);
+    objectives.clear();
+  }
 }

@@ -12,11 +12,11 @@ import org.xml.sax.InputSource;
 
 class XmlElementTest {
 
-    @Test
-    void getChildren_shouldReturnDirectChildrenOfRegions() throws Exception {
-        // Arrange
-        String xml =
-                """
+  @Test
+  void getChildren_shouldReturnDirectChildrenOfRegions() throws Exception {
+    // Arrange
+    String xml =
+        """
             <?xml version="1.0" encoding="UTF-8"?>
             <map name="Test World">
                 <spawns>
@@ -38,23 +38,23 @@ class XmlElementTest {
             </map>
             """;
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(new InputSource(new StringReader(xml)));
-        XmlElement root = XmlElement.from(document.getDocumentElement());
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = factory.newDocumentBuilder();
+    Document document = builder.parse(new InputSource(new StringReader(xml)));
+    XmlElement root = XmlElement.from(document.getDocumentElement());
 
-        // Act
-        List<XmlElement> regions = root.getChildren("regions");
+    // Act
+    List<XmlElement> regions = root.getChildren("regions");
 
-        // Assert
-        assertEquals(2, regions.size());
+    // Assert
+    assertEquals(2, regions.size());
 
-        XmlElement point = regions.get(0);
-        assertEquals("point", point.getName());
-        assertEquals("region-1", point.getRequiredAttribute("id"));
+    XmlElement point = regions.get(0);
+    assertEquals("point", point.getName());
+    assertEquals("region-1", point.getRequiredAttribute("id"));
 
-        XmlElement cuboid = regions.get(1);
-        assertEquals("cuboid", cuboid.getName());
-        assertEquals("region-2", cuboid.getRequiredAttribute("id"));
-    }
+    XmlElement cuboid = regions.get(1);
+    assertEquals("cuboid", cuboid.getName());
+    assertEquals("region-2", cuboid.getRequiredAttribute("id"));
+  }
 }

@@ -13,33 +13,33 @@ import org.bukkit.GameMode;
 
 @RequiredArgsConstructor
 public class PlayingStateHandler implements GameStateHandler {
-    private final Match match;
+  private final Match match;
 
-    @Override
-    public GameState getState() {
-        return GameState.PLAYING;
-    }
+  @Override
+  public GameState getState() {
+    return GameState.PLAYING;
+  }
 
-    @Override
-    public void onEnter(GameStateTransition transition) {
-        match.getWorld().getPlayers().forEach(player -> {
-            player.setGameMode(GameMode.SURVIVAL);
-            player.showTitle(Title.title(
-                    Component.text("Match Started!", NamedTextColor.GREEN),
-                    Component.text("Good luck!", NamedTextColor.YELLOW),
-                    Title.Times.times(Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofSeconds(1))));
-        });
-    }
+  @Override
+  public void onEnter(GameStateTransition transition) {
+    match.getWorld().getPlayers().forEach(player -> {
+      player.setGameMode(GameMode.SURVIVAL);
+      player.showTitle(Title.title(
+          Component.text("Match Started!", NamedTextColor.GREEN),
+          Component.text("Good luck!", NamedTextColor.YELLOW),
+          Title.Times.times(Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofSeconds(1))));
+    });
+  }
 
-    @Override
-    public void onExit(GameStateTransition transition) {}
+  @Override
+  public void onExit(GameStateTransition transition) {}
 
-    /**
-     * Check if the match should end due to player count.
-     *
-     * @return True if the match should end
-     */
-    public boolean shouldEndDueToPlayerCount() {
-        return match.getWorld().getPlayers().size() < 2;
-    }
+  /**
+   * Check if the match should end due to player count.
+   *
+   * @return True if the match should end
+   */
+  public boolean shouldEndDueToPlayerCount() {
+    return match.getWorld().getPlayers().size() < 2;
+  }
 }

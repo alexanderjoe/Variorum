@@ -17,47 +17,49 @@ import java.util.List;
 import java.util.logging.Level;
 
 public class JsonFileRotationProvider extends AbstractFileRotationProvider {
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Type LIST_TYPE = new TypeToken<ArrayList<String>>() {}.getType();
+  private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+  private static final Type LIST_TYPE = new TypeToken<ArrayList<String>>() {}.getType();
 
-    public JsonFileRotationProvider(File file, MapManager mm, MatchFactory factory) {
-        super(file, mm, factory);
+  public JsonFileRotationProvider(File file, MapManager mm, MatchFactory factory) {
+    super(file, mm, factory);
+  }
+
+  @Override
+  protected Rotation createRotation() {
+    List<Match> matches = new ArrayList<>();
+
+    // If rotation file doesn't exist, use default rotation
+    if (!file.exists()) {
+      Variorum.get().getLogger().info("No rotation file found, using default rotation");
+      throw new IllegalStateException("No rotation file found");
     }
 
-    @Override
-    protected Rotation createRotation() {
-        List<Match> matches = new ArrayList<>();
+    try (Reader reader = Files.newBufferedReader(this.file.toPath())) {
+      List<String> mapNames = GSON.fromJson(reader, LIST_TYPE);
 
-        // If rotation file doesn't exist, use default rotation
-        if (!file.exists()) {
-            Variorum.get().getLogger().info("No rotation file found, using default rotation");
-            throw new IllegalStateException("No rotation file found");
+      // Validate that all maps exist and create matches
+      for (String mapName : mapNames) {
+        try {
+          Match match = this.createMatch(mapName);
+          matches.add(match);
+        } catch (Exception e) {
+          Variorum.get().getLogger().warning("Failed to create match for map: " + mapName);
         }
+      }
 
-        try (Reader reader = Files.newBufferedReader(this.file.toPath())) {
-            List<String> mapNames = GSON.fromJson(reader, LIST_TYPE);
+      if (matches.isEmpty()) {
+        Variorum.get()
+            .getLogger()
+            .warning("No valid maps found in rotation file, using default rotation");
+        throw new IllegalStateException("No valid maps found in rotation file");
+      }
 
-            // Validate that all maps exist and create matches
-            for (String mapName : mapNames) {
-                try {
-                    Match match = this.createMatch(mapName);
-                    matches.add(match);
-                } catch (Exception e) {
-                    Variorum.get().getLogger().warning("Failed to create match for map: " + mapName);
-                }
-            }
+      Variorum.get().getLogger().info("Loaded " + matches.size() + " maps from rotation file");
+      return new Rotation(matches);
 
-            if (matches.isEmpty()) {
-                Variorum.get().getLogger().warning("No valid maps found in rotation file, using default rotation");
-                throw new IllegalStateException("No valid maps found in rotation file");
-            }
-
-            Variorum.get().getLogger().info("Loaded " + matches.size() + " maps from rotation file");
-            return new Rotation(matches);
-
-        } catch (IOException e) {
-            Variorum.get().getLogger().log(Level.SEVERE, "Failed to load rotation file", e);
-            throw new IllegalStateException("Failed to load rotation from file", e);
-        }
+    } catch (IOException e) {
+      Variorum.get().getLogger().log(Level.SEVERE, "Failed to load rotation file", e);
+      throw new IllegalStateException("Failed to load rotation from file", e);
     }
+  }
 }

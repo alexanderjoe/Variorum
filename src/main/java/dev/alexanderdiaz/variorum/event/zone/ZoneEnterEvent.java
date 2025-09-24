@@ -4,7 +4,7 @@ import dev.alexanderdiaz.variorum.module.zones.Zone;
 import org.bukkit.entity.Player;
 
 public class ZoneEnterEvent extends ZoneEvent {
-    public ZoneEnterEvent(Player player, Zone zone) {
-        super(player, zone);
-    }
+  public ZoneEnterEvent(Player player, Zone zone) {
+    super(player, zone);
+  }
 }

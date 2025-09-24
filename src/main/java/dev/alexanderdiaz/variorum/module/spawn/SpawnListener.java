@@ -17,52 +17,53 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 
 @RequiredArgsConstructor
 public class SpawnListener implements Listener {
-    private final SpawnModule module;
+  private final SpawnModule module;
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerLogin(PlayerLoginEvent event) {
-        if (!module.getMatch().isLoaded()) {
-            event.disallow(PlayerLoginEvent.Result.KICK_OTHER, Component.text("The match is still loading!"));
-        }
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onPlayerLogin(PlayerLoginEvent event) {
+    if (!module.getMatch().isLoaded()) {
+      event.disallow(
+          PlayerLoginEvent.Result.KICK_OTHER, Component.text("The match is still loading!"));
+    }
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  public void onPlayerJoin(PlayerJoinEvent event) {
+    event.joinMessage(null);
+    module.spawnPlayer(event.getPlayer(), false, true);
+  }
+
+  @EventHandler
+  public void onPlayerRespawn(PlayerRespawnEvent event) {
+    event.setRespawnLocation(module.getSpawnLocation(event.getPlayer()));
+    module.spawnPlayer(event.getPlayer(), true, true);
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  public void onPlayerChangeTeam(PlayerChangeTeamEvent event) {
+    GameStateModule gameState = module.getMatch().getRequiredModule(GameStateModule.class);
+
+    if (event.getToTeam() == null) {
+      module.spawnPlayer(event.getPlayer(), false, false);
+      return;
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        event.joinMessage(null);
-        module.spawnPlayer(event.getPlayer(), false, true);
+    if (GameState.PLAYING.equals(gameState.getCurrentState())) {
+      module.spawnPlayer(event.getPlayer(), true, true);
     }
+  }
 
-    @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        event.setRespawnLocation(module.getSpawnLocation(event.getPlayer()));
-        module.spawnPlayer(event.getPlayer(), true, true);
+  @EventHandler
+  public void onGameStateChange(GameStateChangeEvent event) {
+    if (event.getNewState() == GameState.PLAYING) {
+      module.handleMatchStart();
+    } else if (event.getNewState() == GameState.ENDED) {
+      module.handleMatchEnded();
     }
+  }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onPlayerChangeTeam(PlayerChangeTeamEvent event) {
-        GameStateModule gameState = module.getMatch().getRequiredModule(GameStateModule.class);
-
-        if (event.getToTeam() == null) {
-            module.spawnPlayer(event.getPlayer(), false, false);
-            return;
-        }
-
-        if (GameState.PLAYING.equals(gameState.getCurrentState())) {
-            module.spawnPlayer(event.getPlayer(), true, true);
-        }
-    }
-
-    @EventHandler
-    public void onGameStateChange(GameStateChangeEvent event) {
-        if (event.getNewState() == GameState.PLAYING) {
-            module.handleMatchStart();
-        } else if (event.getNewState() == GameState.ENDED) {
-            module.handleMatchEnded();
-        }
-    }
-
-    @EventHandler
-    public void onMatchOpen(MatchOpenEvent event) {
-        Bukkit.getOnlinePlayers().forEach(player -> module.spawnPlayer(player, false, true));
-    }
+  @EventHandler
+  public void onMatchOpen(MatchOpenEvent event) {
+    Bukkit.getOnlinePlayers().forEach(player -> module.spawnPlayer(player, false, true));
+  }
 }

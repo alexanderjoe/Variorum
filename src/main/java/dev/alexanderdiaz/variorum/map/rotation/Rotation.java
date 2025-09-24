@@ -12,86 +12,86 @@ import org.apache.commons.lang3.mutable.MutableInt;
 @Getter
 @ToString
 public class Rotation {
-    private final List<Match> mapQueue;
-    private final MutableInt currentIndex;
+  private final List<Match> mapQueue;
+  private final MutableInt currentIndex;
 
-    public Rotation(List<Match> matches) {
-        this.mapQueue = matches;
-        this.currentIndex = new MutableInt(-1);
+  public Rotation(List<Match> matches) {
+    this.mapQueue = matches;
+    this.currentIndex = new MutableInt(-1);
+  }
+
+  public void start() {
+    this.currentIndex.increment();
+    getMatch().load();
+    getMatch().start();
+  }
+
+  public boolean remove(int index) {
+    if (index <= this.currentIndex.intValue() || index > this.mapQueue.size()) {
+      throw new IllegalArgumentException("Invalid index " + index + " for removal.");
     }
 
-    public void start() {
-        this.currentIndex.increment();
-        getMatch().load();
-        getMatch().start();
+    this.mapQueue.remove(index);
+    return true;
+  }
+
+  public boolean next(Match match) throws IllegalArgumentException {
+    return insert(this.currentIndex.intValue() + 1, match);
+  }
+
+  public boolean append(Match match) {
+    return insert(this.mapQueue.size(), match);
+  }
+
+  public boolean insert(int index, Match match) {
+    if (index <= this.currentIndex.intValue() || index > this.mapQueue.size()) {
+      throw new IllegalArgumentException("Invalid index " + index + " for insertion.");
     }
 
-    public boolean remove(int index) {
-        if (index <= this.currentIndex.intValue() || index > this.mapQueue.size()) {
-            throw new IllegalArgumentException("Invalid index " + index + " for removal.");
-        }
+    this.mapQueue.add(index, match);
+    return true;
+  }
 
-        this.mapQueue.remove(index);
-        return true;
+  public Match getMatch() {
+    Optional<Match> match = getMatchAt(this.currentIndex.intValue());
+    Preconditions.checkState(match.isPresent(), "No match at index " + this.currentIndex);
+    return match.get();
+  }
+
+  public Optional<Match> getNextMatch() {
+    return getMatchAt(this.currentIndex.intValue() + 1);
+  }
+
+  public Optional<Match> getMatchAt(int index) {
+    if (index < 0 || index >= this.mapQueue.size()) {
+      return Optional.empty();
+    }
+    return Optional.of(this.mapQueue.get(index));
+  }
+
+  public void cycle() {
+    Match from = getMatch();
+    Optional<Match> to = getNextMatch();
+
+    if (to.isEmpty()) {
+      throw new IllegalStateException("No match to cycle to.");
     }
 
-    public boolean next(Match match) throws IllegalArgumentException {
-        return insert(this.currentIndex.intValue() + 1, match);
-    }
+    from.end();
 
-    public boolean append(Match match) {
-        return insert(this.mapQueue.size(), match);
-    }
+    this.currentIndex.increment();
 
-    public boolean insert(int index, Match match) {
-        if (index <= this.currentIndex.intValue() || index > this.mapQueue.size()) {
-            throw new IllegalArgumentException("Invalid index " + index + " for insertion.");
-        }
+    to.get().load();
+    to.get().start();
 
-        this.mapQueue.add(index, match);
-        return true;
-    }
-
-    public Match getMatch() {
-        Optional<Match> match = getMatchAt(this.currentIndex.intValue());
-        Preconditions.checkState(match.isPresent(), "No match at index " + this.currentIndex);
-        return match.get();
-    }
-
-    public Optional<Match> getNextMatch() {
-        return getMatchAt(this.currentIndex.intValue() + 1);
-    }
-
-    public Optional<Match> getMatchAt(int index) {
-        if (index < 0 || index >= this.mapQueue.size()) {
-            return Optional.empty();
-        }
-        return Optional.of(this.mapQueue.get(index));
-    }
-
-    public void cycle() {
-        Match from = getMatch();
-        Optional<Match> to = getNextMatch();
-
-        if (to.isEmpty()) {
-            throw new IllegalStateException("No match to cycle to.");
-        }
-
-        from.end();
-
-        this.currentIndex.increment();
-
-        to.get().load();
-        to.get().start();
-
-        Variorum.get()
-                .getServer()
-                .getScheduler()
-                .runTaskLater(
-                        Variorum.get(),
-                        bukkitTask -> {
-                            from.unload();
-                        },
-                        20L * 5); // 5 seconds
-    }
+    Variorum.get()
+        .getServer()
+        .getScheduler()
+        .runTaskLater(
+            Variorum.get(),
+            bukkitTask -> {
+              from.unload();
+            },
+            20L * 5); // 5 seconds
+  }
 }

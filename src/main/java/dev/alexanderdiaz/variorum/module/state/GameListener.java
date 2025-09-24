@@ -13,56 +13,57 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class GameListener implements Listener {
-    private final Match match;
-    private final GameStateModule gameStateModule;
+  private final Match match;
+  private final GameStateModule gameStateModule;
 
-    public GameListener(Match match, GameStateModule gameStateModule) {
-        this.match = match;
-        this.gameStateModule = gameStateModule;
+  public GameListener(Match match, GameStateModule gameStateModule) {
+    this.match = match;
+    this.gameStateModule = gameStateModule;
+  }
+
+  @EventHandler
+  public void onPlayerJoin(PlayerJoinEvent event) {}
+
+  @EventHandler
+  public void onPlayerQuit(PlayerQuitEvent event) {
+    if (gameStateModule.getCurrentState() == GameState.PLAYING) {
+      if (gameStateModule.getPlayingHandler().shouldEndDueToPlayerCount()) {
+        gameStateModule.setState(GameState.ENDED);
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+  public void onBlockBreak(BlockBreakEvent event) {
+    if (gameStateModule.getCurrentState() != GameState.PLAYING) {
+      event.setCancelled(true);
+      return;
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {}
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    if (teamsModule.getPlayerTeam(event.getPlayer()).isEmpty()) {
+      event.setCancelled(true);
+    }
+  }
 
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        if (gameStateModule.getCurrentState() == GameState.PLAYING) {
-            if (gameStateModule.getPlayingHandler().shouldEndDueToPlayerCount()) {
-                gameStateModule.setState(GameState.ENDED);
-            }
-        }
+  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+  public void onBlockPlace(BlockPlaceEvent event) {
+    if (gameStateModule.getCurrentState() != GameState.PLAYING) {
+      event.setCancelled(true);
+      return;
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onBlockBreak(BlockBreakEvent event) {
-        if (gameStateModule.getCurrentState() != GameState.PLAYING) {
-            event.setCancelled(true);
-            return;
-        }
-
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        if (teamsModule.getPlayerTeam(event.getPlayer()).isEmpty()) {
-            event.setCancelled(true);
-        }
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    if (teamsModule.getPlayerTeam(event.getPlayer()).isEmpty()) {
+      event.setCancelled(true);
     }
+  }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onBlockPlace(BlockPlaceEvent event) {
-        if (gameStateModule.getCurrentState() != GameState.PLAYING) {
-            event.setCancelled(true);
-            return;
-        }
-
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        if (teamsModule.getPlayerTeam(event.getPlayer()).isEmpty()) {
-            event.setCancelled(true);
-        }
+  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+  public void onEntityDamage(EntityDamageEvent event) {
+    if (gameStateModule.getCurrentState() != GameState.PLAYING
+        && event.getEntity() instanceof Player) {
+      event.setCancelled(true);
     }
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onEntityDamage(EntityDamageEvent event) {
-        if (gameStateModule.getCurrentState() != GameState.PLAYING && event.getEntity() instanceof Player) {
-            event.setCancelled(true);
-        }
-    }
+  }
 }

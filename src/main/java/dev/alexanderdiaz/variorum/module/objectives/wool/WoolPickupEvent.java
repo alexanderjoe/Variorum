@@ -11,18 +11,18 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 @Getter
 public class WoolPickupEvent extends Event {
-    private final Match match;
-    private final WoolObjective objective;
-    private final Player player;
+  private final Match match;
+  private final WoolObjective objective;
+  private final Player player;
 
-    private static final HandlerList handlers = new HandlerList();
+  private static final HandlerList handlers = new HandlerList();
 
-    @Override
-    public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
+  @Override
+  public @NotNull HandlerList getHandlers() {
+    return handlers;
+  }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+  public static HandlerList getHandlerList() {
+    return handlers;
+  }
 }

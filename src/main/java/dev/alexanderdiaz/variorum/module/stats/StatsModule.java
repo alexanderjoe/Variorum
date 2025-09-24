@@ -13,36 +13,36 @@ import lombok.Getter;
 import org.bukkit.entity.Player;
 
 public class StatsModule implements Module {
-    private final Match match;
-    private StatsListener listener;
+  private final Match match;
+  private StatsListener listener;
 
-    @Getter
-    private final Map<UUID, PlayerStats> playerStats;
+  @Getter
+  private final Map<UUID, PlayerStats> playerStats;
 
-    public StatsModule(Match match) {
-        this.match = match;
-        this.playerStats = new HashMap<>();
+  public StatsModule(Match match) {
+    this.match = match;
+    this.playerStats = new HashMap<>();
+  }
+
+  @Override
+  public void enable() {
+    this.listener = new StatsListener(this);
+    Events.register(listener);
+  }
+
+  @Override
+  public void disable() {
+    if (listener != null) {
+      Events.unregister(listener);
     }
+    playerStats.clear();
+  }
 
-    @Override
-    public void enable() {
-        this.listener = new StatsListener(this);
-        Events.register(listener);
-    }
+  public PlayerStats getPlayerStats(Player player) {
+    return playerStats.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats());
+  }
 
-    @Override
-    public void disable() {
-        if (listener != null) {
-            Events.unregister(listener);
-        }
-        playerStats.clear();
-    }
-
-    public PlayerStats getPlayerStats(Player player) {
-        return playerStats.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats());
-    }
-
-    @Nullable public Team getPlayerTeam(Player player) {
-        return match.getRequiredModule(TeamsModule.class).getPlayerTeam(player).orElse(null);
-    }
+  @Nullable public Team getPlayerTeam(Player player) {
+    return match.getRequiredModule(TeamsModule.class).getPlayerTeam(player).orElse(null);
+  }
 }

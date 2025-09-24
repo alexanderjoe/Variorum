@@ -11,40 +11,48 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CountdownStateHandler implements GameStateHandler {
-    private final Match match;
-    private final CountdownManager countdownManager;
+  private final Match match;
+  private final CountdownManager countdownManager;
 
-    @Override
-    public GameState getState() {
-        return GameState.COUNTDOWN;
+  @Override
+  public GameState getState() {
+    return GameState.COUNTDOWN;
+  }
+
+  @Override
+  public void onEnter(GameStateTransition transition) {
+    if (countdownManager.getCountdown("main_countdown") == null) {
+      countdownManager.createCountdown(
+          "main_countdown", 30, CountdownOptions.matchStart(), countdown -> {
+            match
+                .getRequiredModule(GameStateModule.class)
+                .getStateManager()
+                .transitionTo(GameState.PLAYING);
+          });
     }
 
-    @Override
-    public void onEnter(GameStateTransition transition) {
-        if (countdownManager.getCountdown("main_countdown") == null) {
-            countdownManager.createCountdown("main_countdown", 30, CountdownOptions.matchStart(), countdown -> {
-                match.getRequiredModule(GameStateModule.class).getStateManager().transitionTo(GameState.PLAYING);
-            });
-        }
+    countdownManager.startCountdown("main_countdown");
+  }
 
-        countdownManager.startCountdown("main_countdown");
-    }
+  @Override
+  public void onExit(GameStateTransition transition) {}
 
-    @Override
-    public void onExit(GameStateTransition transition) {}
+  /**
+   * Sets the countdown duration.
+   *
+   * @param seconds The number of seconds for the countdown
+   */
+  public void setCountdownDuration(int seconds) {
+    countdownManager.stopActiveCountdown();
 
-    /**
-     * Sets the countdown duration.
-     *
-     * @param seconds The number of seconds for the countdown
-     */
-    public void setCountdownDuration(int seconds) {
-        countdownManager.stopActiveCountdown();
-
-        countdownManager.createCountdown("main_countdown", seconds, CountdownOptions.matchStart(), countdown -> {
-            match.getRequiredModule(GameStateModule.class).getStateManager().transitionTo(GameState.PLAYING);
+    countdownManager.createCountdown(
+        "main_countdown", seconds, CountdownOptions.matchStart(), countdown -> {
+          match
+              .getRequiredModule(GameStateModule.class)
+              .getStateManager()
+              .transitionTo(GameState.PLAYING);
         });
 
-        countdownManager.startCountdown("main_countdown");
-    }
+    countdownManager.startCountdown("main_countdown");
+  }
 }

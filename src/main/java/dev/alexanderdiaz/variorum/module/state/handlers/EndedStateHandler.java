@@ -17,42 +17,42 @@ import org.bukkit.GameMode;
 
 @RequiredArgsConstructor
 public class EndedStateHandler implements GameStateHandler {
-    private static final int CYCLE_SECONDS = 10;
+  private static final int CYCLE_SECONDS = 10;
 
-    private final Match match;
-    private final CountdownManager countdownManager;
+  private final Match match;
+  private final CountdownManager countdownManager;
 
-    @Override
-    public GameState getState() {
-        return GameState.ENDED;
-    }
+  @Override
+  public GameState getState() {
+    return GameState.ENDED;
+  }
 
-    @Override
-    public void onEnter(GameStateTransition transition) {
-        countdownManager.stopActiveCountdown();
+  @Override
+  public void onEnter(GameStateTransition transition) {
+    countdownManager.stopActiveCountdown();
 
-        match.getPlayers().forEach(player -> {
-            Players.reset(player);
-            player.setGameMode(GameMode.ADVENTURE);
-            player.showTitle(Title.title(
-                    Component.text("Game Over!", NamedTextColor.GOLD),
-                    Component.empty(),
-                    Title.Times.times(Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofSeconds(1))));
+    match.getPlayers().forEach(player -> {
+      Players.reset(player);
+      player.setGameMode(GameMode.ADVENTURE);
+      player.showTitle(Title.title(
+          Component.text("Game Over!", NamedTextColor.GOLD),
+          Component.empty(),
+          Title.Times.times(Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofSeconds(1))));
+    });
+
+    countdownManager.createCountdown(
+        "cycle_countdown",
+        CYCLE_SECONDS,
+        CountdownOptions.builder()
+            .prefix(Component.text("Next map in ", NamedTextColor.YELLOW))
+            .build(),
+        countdown -> {
+          Variorum.get().getMatchManager().getRotation().cycle();
         });
 
-        countdownManager.createCountdown(
-                "cycle_countdown",
-                CYCLE_SECONDS,
-                CountdownOptions.builder()
-                        .prefix(Component.text("Next map in ", NamedTextColor.YELLOW))
-                        .build(),
-                countdown -> {
-                    Variorum.get().getMatchManager().getRotation().cycle();
-                });
+    countdownManager.startCountdown("cycle_countdown");
+  }
 
-        countdownManager.startCountdown("cycle_countdown");
-    }
-
-    @Override
-    public void onExit(GameStateTransition transition) {}
+  @Override
+  public void onExit(GameStateTransition transition) {}
 }

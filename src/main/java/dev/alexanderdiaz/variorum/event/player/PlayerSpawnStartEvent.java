@@ -9,30 +9,31 @@ import org.bukkit.event.player.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class PlayerSpawnStartEvent extends PlayerEvent {
-    private static final HandlerList handlers = new HandlerList();
+  private static final HandlerList handlers = new HandlerList();
 
-    @Getter
-    private final Optional<Team> team;
+  @Getter
+  private final Optional<Team> team;
 
-    @Getter
-    private final boolean giveLoadout;
+  @Getter
+  private final boolean giveLoadout;
 
-    @Getter
-    private final boolean teleportPlayer;
+  @Getter
+  private final boolean teleportPlayer;
 
-    public PlayerSpawnStartEvent(@NotNull Player who, Team team, boolean giveLoadout, boolean teleportPlayer) {
-        super(who);
-        this.team = Optional.ofNullable(team);
-        this.giveLoadout = giveLoadout;
-        this.teleportPlayer = teleportPlayer;
-    }
+  public PlayerSpawnStartEvent(
+      @NotNull Player who, Team team, boolean giveLoadout, boolean teleportPlayer) {
+    super(who);
+    this.team = Optional.ofNullable(team);
+    this.giveLoadout = giveLoadout;
+    this.teleportPlayer = teleportPlayer;
+  }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+  public static HandlerList getHandlerList() {
+    return handlers;
+  }
 
-    @Override
-    public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
+  @Override
+  public @NotNull HandlerList getHandlers() {
+    return handlers;
+  }
 }

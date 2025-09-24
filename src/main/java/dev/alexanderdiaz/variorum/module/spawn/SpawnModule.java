@@ -19,128 +19,135 @@ import org.bukkit.entity.Player;
 
 @RequiredArgsConstructor
 public class SpawnModule implements Module {
-    @Getter
-    private final Match match;
+  @Getter
+  private final Match match;
 
-    private SpawnListener listener;
+  private SpawnListener listener;
 
-    @Override
-    public void enable() {
-        this.listener = new SpawnListener(this);
-        Events.register(listener);
+  @Override
+  public void enable() {
+    this.listener = new SpawnListener(this);
+    Events.register(listener);
+  }
+
+  @Override
+  public void disable() {
+    if (listener != null) {
+      Events.unregister(listener);
     }
+  }
 
-    @Override
-    public void disable() {
-        if (listener != null) {
-            Events.unregister(listener);
-        }
-    }
+  public void handleMatchStart() {
+    World matchWorld = match.getWorld();
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
 
-    public void handleMatchStart() {
-        World matchWorld = match.getWorld();
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    matchWorld.getPlayers().forEach(player -> {
+      if (teamsModule.getPlayerTeam(player).isPresent()) {
+        spawnPlayer(player, true, true);
+      }
+    });
+  }
 
-        matchWorld.getPlayers().forEach(player -> {
-            if (teamsModule.getPlayerTeam(player).isPresent()) {
-                spawnPlayer(player, true, true);
-            }
-        });
-    }
+  public void handleMatchEnded() {
+    World matchWorld = match.getWorld();
 
-    public void handleMatchEnded() {
-        World matchWorld = match.getWorld();
+    matchWorld.getPlayers().forEach(player -> {
+      spawnPlayer(player, false, false);
+    });
+  }
 
-        matchWorld.getPlayers().forEach(player -> {
-            spawnPlayer(player, false, false);
-        });
-    }
+  public Location getSpawnLocation(Player player) {
+    World matchWorld = match.getWorld();
+    VariorumMap map = match.getMap();
 
-    public Location getSpawnLocation(Player player) {
-        World matchWorld = match.getWorld();
-        VariorumMap map = match.getMap();
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    Optional<Team> playerTeam = teamsModule.getPlayerTeam(player);
 
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        Optional<Team> playerTeam = teamsModule.getPlayerTeam(player);
+    if (playerTeam.isPresent()) {
+      Optional<VariorumMap.Spawns.TeamSpawn> teamSpawn = map.getSpawns().getTeamSpawns().stream()
+          .filter(spawn -> spawn.getTeam().equals(playerTeam.get().id()))
+          .findFirst();
 
-        if (playerTeam.isPresent()) {
-            Optional<VariorumMap.Spawns.TeamSpawn> teamSpawn = map.getSpawns().getTeamSpawns().stream()
-                    .filter(spawn -> spawn.getTeam().equals(playerTeam.get().id()))
-                    .findFirst();
-
-            if (teamSpawn.isPresent()) {
-                VariorumMap.Point spawnPoint = teamSpawn.get().getRegion().getPoint();
-                double yaw = teamSpawn.get().getRegion().getYaw();
-                return new Location(
-                        matchWorld, spawnPoint.getX(), spawnPoint.getY(), spawnPoint.getZ(), (float) yaw, 0.0f);
-            }
-        }
-
-        return getDefaultSpawn();
-    }
-
-    private void applySpawnLoadout(Player player, VariorumMap.Spawns.SpawnRegion spawnRegion) {
-        match.getModule(LoadoutsModule.class).ifPresent(loadoutsModule -> {
-            Team team = match.getRequiredModule(TeamsModule.class)
-                    .getPlayerTeam(player)
-                    .orElse(null);
-
-            String loadoutId = spawnRegion.getLoadout() != null ? spawnRegion.getLoadout() : "default";
-            if (match.getRegistry().has(loadoutId)) {
-                loadoutsModule.applyLoadout(player, loadoutId, team);
-            }
-        });
-    }
-
-    public Location getDefaultSpawn() {
-        World matchWorld = match.getWorld();
-        VariorumMap map = match.getMap();
-
-        VariorumMap.Point defaultPoint = map.getSpawns().getDefaultSpawn().getPoint();
-        double defaultYaw = map.getSpawns().getDefaultSpawn().getYaw();
-
+      if (teamSpawn.isPresent()) {
+        VariorumMap.Point spawnPoint = teamSpawn.get().getRegion().getPoint();
+        double yaw = teamSpawn.get().getRegion().getYaw();
         return new Location(
-                matchWorld, defaultPoint.getX(), defaultPoint.getY(), defaultPoint.getZ(), (float) defaultYaw, 0.0f);
+            matchWorld, spawnPoint.getX(), spawnPoint.getY(), spawnPoint.getZ(), (float) yaw, 0.0f);
+      }
     }
 
-    public void spawnPlayer(Player player, boolean giveLoadout, boolean teleport) {
-        World matchWorld = match.getWorld();
-        if (matchWorld == null) {
-            Variorum.get().getLogger().warning("Match world is null when trying to spawn " + player.getName());
-            return;
-        }
+    return getDefaultSpawn();
+  }
 
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        Team playerTeam = teamsModule.getPlayerTeam(player).orElse(null);
+  private void applySpawnLoadout(Player player, VariorumMap.Spawns.SpawnRegion spawnRegion) {
+    match.getModule(LoadoutsModule.class).ifPresent(loadoutsModule -> {
+      Team team =
+          match.getRequiredModule(TeamsModule.class).getPlayerTeam(player).orElse(null);
 
-        Players.reset(player);
+      String loadoutId = spawnRegion.getLoadout() != null ? spawnRegion.getLoadout() : "default";
+      if (match.getRegistry().has(loadoutId)) {
+        loadoutsModule.applyLoadout(player, loadoutId, team);
+      }
+    });
+  }
 
-        PlayerSpawnStartEvent call = new PlayerSpawnStartEvent(player, playerTeam, giveLoadout, teleport);
-        Events.call(call);
+  public Location getDefaultSpawn() {
+    World matchWorld = match.getWorld();
+    VariorumMap map = match.getMap();
 
-        Location spawn = getSpawnLocation(player);
-        if (teleport) {
-            player.teleport(spawn);
-        }
+    VariorumMap.Point defaultPoint = map.getSpawns().getDefaultSpawn().getPoint();
+    double defaultYaw = map.getSpawns().getDefaultSpawn().getYaw();
 
-        if (playerTeam != null && giveLoadout) {
-            VariorumMap map = match.getMap();
-            Optional<VariorumMap.Spawns.TeamSpawn> teamSpawn = map.getSpawns().getTeamSpawns().stream()
-                    .filter(s -> s.getTeam().equals(playerTeam.id()))
-                    .findFirst();
+    return new Location(
+        matchWorld,
+        defaultPoint.getX(),
+        defaultPoint.getY(),
+        defaultPoint.getZ(),
+        (float) defaultYaw,
+        0.0f);
+  }
 
-            if (teamSpawn.isPresent()) {
-                applySpawnLoadout(player, teamSpawn.get().getRegion());
-            } else {
-                applySpawnLoadout(player, map.getSpawns().getDefaultSpawn());
-            }
-        }
-
-        Variorum.get()
-                .getLogger()
-                .info("Spawned " + player.getName() + " at "
-                        + String.format(
-                                "%.1f, %.1f, %.1f (yaw: %.1f) in %s",
-                                spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), matchWorld.getName()));
+  public void spawnPlayer(Player player, boolean giveLoadout, boolean teleport) {
+    World matchWorld = match.getWorld();
+    if (matchWorld == null) {
+      Variorum.get()
+          .getLogger()
+          .warning("Match world is null when trying to spawn " + player.getName());
+      return;
     }
+
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    Team playerTeam = teamsModule.getPlayerTeam(player).orElse(null);
+
+    Players.reset(player);
+
+    PlayerSpawnStartEvent call =
+        new PlayerSpawnStartEvent(player, playerTeam, giveLoadout, teleport);
+    Events.call(call);
+
+    Location spawn = getSpawnLocation(player);
+    if (teleport) {
+      player.teleport(spawn);
+    }
+
+    if (playerTeam != null && giveLoadout) {
+      VariorumMap map = match.getMap();
+      Optional<VariorumMap.Spawns.TeamSpawn> teamSpawn = map.getSpawns().getTeamSpawns().stream()
+          .filter(s -> s.getTeam().equals(playerTeam.id()))
+          .findFirst();
+
+      if (teamSpawn.isPresent()) {
+        applySpawnLoadout(player, teamSpawn.get().getRegion());
+      } else {
+        applySpawnLoadout(player, map.getSpawns().getDefaultSpawn());
+      }
+    }
+
+    Variorum.get()
+        .getLogger()
+        .info("Spawned " + player.getName() + " at "
+            + String.format(
+                "%.1f, %.1f, %.1f (yaw: %.1f) in %s",
+                spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), matchWorld.getName()));
+  }
 }

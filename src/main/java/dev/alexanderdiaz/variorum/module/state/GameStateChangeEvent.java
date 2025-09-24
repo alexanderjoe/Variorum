@@ -7,24 +7,24 @@ import org.bukkit.event.HandlerList;
 
 @Getter
 public class GameStateChangeEvent extends Event {
-    private static final HandlerList handlers = new HandlerList();
+  private static final HandlerList handlers = new HandlerList();
 
-    private final Match match;
-    private final GameState oldState;
-    private final GameState newState;
+  private final Match match;
+  private final GameState oldState;
+  private final GameState newState;
 
-    public GameStateChangeEvent(Match match, GameState oldState, GameState newState) {
-        this.match = match;
-        this.oldState = oldState;
-        this.newState = newState;
-    }
+  public GameStateChangeEvent(Match match, GameState oldState, GameState newState) {
+    this.match = match;
+    this.oldState = oldState;
+    this.newState = newState;
+  }
 
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
-    }
+  @Override
+  public HandlerList getHandlers() {
+    return handlers;
+  }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+  public static HandlerList getHandlerList() {
+    return handlers;
+  }
 }

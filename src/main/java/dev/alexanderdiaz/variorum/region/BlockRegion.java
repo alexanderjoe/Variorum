@@ -8,38 +8,38 @@ import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
 public class BlockRegion extends AbstractRegion {
-    @Getter
-    private final Vector position;
+  @Getter
+  private final Vector position;
 
-    public BlockRegion(Vector position) {
-        this.position = position.clone();
-    }
+  public BlockRegion(Vector position) {
+    this.position = position.clone();
+  }
 
-    @Override
-    public boolean contains(Vector vector) {
-        return vector.getBlockX() == position.getBlockX()
-                && vector.getBlockY() == position.getBlockY()
-                && vector.getBlockZ() == position.getBlockZ();
-    }
+  @Override
+  public boolean contains(Vector vector) {
+    return vector.getBlockX() == position.getBlockX()
+        && vector.getBlockY() == position.getBlockY()
+        && vector.getBlockZ() == position.getBlockZ();
+  }
 
-    @Override
-    public Set<Block> getBlocks(World world) {
-        return Collections.singleton(
-                world.getBlockAt(position.getBlockX(), position.getBlockY(), position.getBlockZ()));
-    }
+  @Override
+  public Set<Block> getBlocks(World world) {
+    return Collections.singleton(
+        world.getBlockAt(position.getBlockX(), position.getBlockY(), position.getBlockZ()));
+  }
 
-    @Override
-    public Vector getMin() {
-        return position.clone();
-    }
+  @Override
+  public Vector getMin() {
+    return position.clone();
+  }
 
-    @Override
-    public Vector getMax() {
-        return position.clone();
-    }
+  @Override
+  public Vector getMax() {
+    return position.clone();
+  }
 
-    @Override
-    public Vector getCenter() {
-        return position.clone().add(new Vector(0.5, 0.5, 0.5));
-    }
+  @Override
+  public Vector getCenter() {
+    return position.clone().add(new Vector(0.5, 0.5, 0.5));
+  }
 }

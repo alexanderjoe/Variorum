@@ -4,13 +4,13 @@ import lombok.Getter;
 
 @Getter
 public class TeamResult {
-    private int objectivesCompleted;
+  private int objectivesCompleted;
 
-    public TeamResult() {
-        this.objectivesCompleted = 0;
-    }
+  public TeamResult() {
+    this.objectivesCompleted = 0;
+  }
 
-    public void incrementObjectives() {
-        objectivesCompleted++;
-    }
+  public void incrementObjectives() {
+    objectivesCompleted++;
+  }
 }

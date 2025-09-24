@@ -17,120 +17,124 @@ import org.incendo.cloud.annotations.suggestion.Suggestions;
 import org.incendo.cloud.context.CommandContext;
 
 public class TeamCommands {
-    private final Variorum plugin;
+  private final Variorum plugin;
 
-    public TeamCommands(Variorum plugin) {
-        this.plugin = plugin;
+  public TeamCommands(Variorum plugin) {
+    this.plugin = plugin;
+  }
+
+  @Command("join <team>")
+  @CommandDescription("Join a specific team")
+  public void joinTeam(
+      final Player player,
+      final @Argument(value = "team", suggestions = "availableTeams") String teamId) {
+    Match match = Variorum.getMatch();
+    if (match == null) {
+      player.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
+      return;
     }
 
-    @Command("join <team>")
-    @CommandDescription("Join a specific team")
-    public void joinTeam(
-            final Player player, final @Argument(value = "team", suggestions = "availableTeams") String teamId) {
-        Match match = Variorum.getMatch();
-        if (match == null) {
-            player.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
-            return;
-        }
-
-        GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
-        if (stateModule.getCurrentState() == GameState.ENDED) {
-            player.sendMessage(Component.text("Cannot join teams while the match is cycling!", NamedTextColor.RED));
-            return;
-        }
-
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        Team from = teamsModule.getPlayerTeam(player).orElse(null);
-        Team to = teamsModule.getTeamById(teamId).orElse(null);
-
-        if (to == null) {
-            player.sendMessage(Component.text("That team doesn't exist!", NamedTextColor.RED));
-            return;
-        }
-
-        if (from != null && from.equals(to)) {
-            player.sendMessage(Component.text("You are already on that team!", NamedTextColor.RED));
-            return;
-        }
-
-        if (!teamsModule.canJoinTeam(to)) {
-            player.sendMessage(Component.text("That team is full!", NamedTextColor.RED));
-            return;
-        }
-
-        player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW)
-                .append(Component.text(to.name(), to.textColor()))
-                .append(Component.text(" team.", NamedTextColor.YELLOW)));
-        teamsModule.setPlayerTeam(player, to);
+    GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
+    if (stateModule.getCurrentState() == GameState.ENDED) {
+      player.sendMessage(
+          Component.text("Cannot join teams while the match is cycling!", NamedTextColor.RED));
+      return;
     }
 
-    @Command("auto")
-    @CommandDescription("Join a balanced team automatically")
-    public void autoJoin(final Player player) {
-        Match match = Variorum.getMatch();
-        if (match == null) {
-            player.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
-            return;
-        }
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    Team from = teamsModule.getPlayerTeam(player).orElse(null);
+    Team to = teamsModule.getTeamById(teamId).orElse(null);
 
-        // Check match state
-        GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
-        if (stateModule.getCurrentState() == GameState.ENDED) {
-            player.sendMessage(Component.text("Cannot join teams while the match is cycling!", NamedTextColor.RED));
-            return;
-        }
-
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        Team autoTeam = teamsModule.autoAssignTeam(player);
-
-        if (autoTeam == null) {
-            player.sendMessage(Component.text("Failed to find a team to join!", NamedTextColor.RED));
-            return;
-        }
-
-        Team currentTeam = teamsModule.getPlayerTeam(player).orElse(null);
-        if (currentTeam != null && currentTeam.equals(autoTeam)) {
-            player.sendMessage(Component.text("You are already on that team!", NamedTextColor.RED));
-            return;
-        }
-
-        player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW)
-                .append(Component.text(autoTeam.name(), autoTeam.textColor()))
-                .append(Component.text(" team.", NamedTextColor.YELLOW)));
-        teamsModule.setPlayerTeam(player, autoTeam);
+    if (to == null) {
+      player.sendMessage(Component.text("That team doesn't exist!", NamedTextColor.RED));
+      return;
     }
 
-    @Command("leave")
-    @CommandDescription("Leave your current team")
-    public void leaveTeam(final Player player) {
-        Match match = Variorum.getMatch();
-        if (match == null) {
-            player.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
-            return;
-        }
-
-        GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
-        if (GameState.ENDED.equals(stateModule.getCurrentState())) {
-            player.sendMessage(Component.text("Cannot leave teams while the match is cycling!", NamedTextColor.RED));
-            return;
-        }
-
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        teamsModule.removePlayerFromTeam(player);
-        player.sendMessage(Component.text("You left your team", NamedTextColor.YELLOW));
+    if (from != null && from.equals(to)) {
+      player.sendMessage(Component.text("You are already on that team!", NamedTextColor.RED));
+      return;
     }
 
-    @Suggestions("availableTeams")
-    public List<String> suggestTeams(CommandContext<Player> context, String input) {
-        Match match = Variorum.getMatch();
-        if (match == null) {
-            return List.of();
-        }
-
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        return teamsModule.getTeams().stream()
-                .map(Team::id)
-                .filter(id -> id.toLowerCase().startsWith(input.toLowerCase()))
-                .toList();
+    if (!teamsModule.canJoinTeam(to)) {
+      player.sendMessage(Component.text("That team is full!", NamedTextColor.RED));
+      return;
     }
+
+    player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW)
+        .append(Component.text(to.name(), to.textColor()))
+        .append(Component.text(" team.", NamedTextColor.YELLOW)));
+    teamsModule.setPlayerTeam(player, to);
+  }
+
+  @Command("auto")
+  @CommandDescription("Join a balanced team automatically")
+  public void autoJoin(final Player player) {
+    Match match = Variorum.getMatch();
+    if (match == null) {
+      player.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
+      return;
+    }
+
+    // Check match state
+    GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
+    if (stateModule.getCurrentState() == GameState.ENDED) {
+      player.sendMessage(
+          Component.text("Cannot join teams while the match is cycling!", NamedTextColor.RED));
+      return;
+    }
+
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    Team autoTeam = teamsModule.autoAssignTeam(player);
+
+    if (autoTeam == null) {
+      player.sendMessage(Component.text("Failed to find a team to join!", NamedTextColor.RED));
+      return;
+    }
+
+    Team currentTeam = teamsModule.getPlayerTeam(player).orElse(null);
+    if (currentTeam != null && currentTeam.equals(autoTeam)) {
+      player.sendMessage(Component.text("You are already on that team!", NamedTextColor.RED));
+      return;
+    }
+
+    player.sendMessage(Component.text("You have joined ", NamedTextColor.YELLOW)
+        .append(Component.text(autoTeam.name(), autoTeam.textColor()))
+        .append(Component.text(" team.", NamedTextColor.YELLOW)));
+    teamsModule.setPlayerTeam(player, autoTeam);
+  }
+
+  @Command("leave")
+  @CommandDescription("Leave your current team")
+  public void leaveTeam(final Player player) {
+    Match match = Variorum.getMatch();
+    if (match == null) {
+      player.sendMessage(Component.text("No match is currently running!", NamedTextColor.RED));
+      return;
+    }
+
+    GameStateModule stateModule = match.getRequiredModule(GameStateModule.class);
+    if (GameState.ENDED.equals(stateModule.getCurrentState())) {
+      player.sendMessage(
+          Component.text("Cannot leave teams while the match is cycling!", NamedTextColor.RED));
+      return;
+    }
+
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    teamsModule.removePlayerFromTeam(player);
+    player.sendMessage(Component.text("You left your team", NamedTextColor.YELLOW));
+  }
+
+  @Suggestions("availableTeams")
+  public List<String> suggestTeams(CommandContext<Player> context, String input) {
+    Match match = Variorum.getMatch();
+    if (match == null) {
+      return List.of();
+    }
+
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    return teamsModule.getTeams().stream()
+        .map(Team::id)
+        .filter(id -> id.toLowerCase().startsWith(input.toLowerCase()))
+        .toList();
+  }
 }

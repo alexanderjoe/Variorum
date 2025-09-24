@@ -30,161 +30,161 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class ScoreboardModule implements Module {
-    private final Match match;
+  private final Match match;
 
-    @Getter
-    private Sidebar sidebar;
+  @Getter
+  private Sidebar sidebar;
 
-    private ComponentSidebarLayout layout;
-    private ScoreboardListener listener;
+  private ComponentSidebarLayout layout;
+  private ScoreboardListener listener;
 
-    public ScoreboardModule(Match match) {
-        this.match = match;
+  public ScoreboardModule(Match match) {
+    this.match = match;
+  }
+
+  @Override
+  public void enable() {
+    ScoreboardLibrary scoreboardLibrary = Variorum.get().getScoreboardLibrary();
+    this.sidebar = scoreboardLibrary.createSidebar();
+
+    updateLayout();
+
+    this.listener = new ScoreboardListener();
+    Events.register(listener);
+
+    match.getWorld().getPlayers().forEach(this::addPlayer);
+  }
+
+  @Override
+  public void disable() {
+    if (listener != null) {
+      Events.unregister(listener);
+      listener = null;
+    }
+    if (sidebar != null) {
+      match.getWorld().getPlayers().forEach(this::removePlayer);
+      sidebar.close();
+      sidebar = null;
+    }
+    if (layout != null) {
+      layout = null;
+    }
+  }
+
+  private void addPlayer(Player player) {
+    if (sidebar != null && match.isLoaded()) {
+      sidebar.addPlayer(player);
+    }
+  }
+
+  private void removePlayer(Player player) {
+    if (sidebar != null) {
+      sidebar.removePlayer(player);
+    }
+  }
+
+  private void updateLayout() {
+    TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
+    ObjectivesModule objectivesModule = match.getRequiredModule(ObjectivesModule.class);
+
+    var contentBuilder = SidebarComponent.builder();
+
+    for (Team team : teamsModule.getTeams()) {
+      contentBuilder.addDynamicLine(() -> Component.text()
+          .append(Component.text(team.name()))
+          .color(team.textColor())
+          .build());
+
+      List<MonumentObjective> monumentObjectives = objectivesModule.getObjectives().stream()
+          .filter(obj -> obj instanceof MonumentObjective)
+          .map(obj -> (MonumentObjective) obj)
+          .filter(mon -> mon.getOwner().equals(team))
+          .toList();
+
+      if (!monumentObjectives.isEmpty()) {
+        monumentObjectives.forEach(monument -> {
+          contentBuilder.addDynamicLine(() -> {
+            Component status = monument.isCompleted()
+                ? Component.text("✓", NamedTextColor.GREEN).decorate(TextDecoration.BOLD)
+                : Component.text("✗", NamedTextColor.RED).decorate(TextDecoration.BOLD);
+
+            return Component.text()
+                .append(Component.text("  " + monument.getName() + " - ", NamedTextColor.WHITE))
+                .append(status)
+                .build();
+          });
+        });
+      }
+
+      List<WoolObjective> woolObjectives = objectivesModule.getObjectives().stream()
+          .filter(obj -> obj instanceof WoolObjective)
+          .map(obj -> (WoolObjective) obj)
+          .filter(wool -> wool.getTeam().isPresent() && wool.getTeam().get().equals(team))
+          .toList();
+
+      if (!woolObjectives.isEmpty()) {
+        woolObjectives.forEach(wool -> {
+          contentBuilder.addDynamicLine(() -> {
+            Component status = wool.isCompleted()
+                ? Component.text("✓", NamedTextColor.GREEN).decorate(TextDecoration.BOLD)
+                : Component.text("✗", NamedTextColor.RED).decorate(TextDecoration.BOLD);
+
+            return Component.text()
+                .append(Component.text("  " + wool.getName() + " - ", NamedTextColor.WHITE))
+                .append(status)
+                .build();
+          });
+        });
+      }
+
+      contentBuilder.addBlankLine();
     }
 
-    @Override
-    public void enable() {
-        ScoreboardLibrary scoreboardLibrary = Variorum.get().getScoreboardLibrary();
-        this.sidebar = scoreboardLibrary.createSidebar();
+    contentBuilder.addDynamicLine(() -> Component.text()
+        .append(Component.text("Map: ", NamedTextColor.GOLD))
+        .append(Component.text(match.getMap().getName(), NamedTextColor.WHITE)
+            .decorate(TextDecoration.BOLD))
+        .build());
 
-        updateLayout();
+    SidebarComponent content = contentBuilder.build();
+    this.layout = new ComponentSidebarLayout(
+        SidebarComponent.staticLine(Component.text("Objectives")), content);
+    this.layout.apply(sidebar);
+  }
 
-        this.listener = new ScoreboardListener();
-        Events.register(listener);
-
-        match.getWorld().getPlayers().forEach(this::addPlayer);
+  private class ScoreboardListener implements Listener {
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+      addPlayer(event.getPlayer());
     }
 
-    @Override
-    public void disable() {
-        if (listener != null) {
-            Events.unregister(listener);
-            listener = null;
-        }
-        if (sidebar != null) {
-            match.getWorld().getPlayers().forEach(this::removePlayer);
-            sidebar.close();
-            sidebar = null;
-        }
-        if (layout != null) {
-            layout = null;
-        }
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+      removePlayer(event.getPlayer());
     }
 
-    private void addPlayer(Player player) {
-        if (sidebar != null && match.isLoaded()) {
-            sidebar.addPlayer(player);
-        }
+    @EventHandler
+    public void onGameStateChange(MatchOpenEvent event) {
+      Bukkit.getOnlinePlayers().forEach(player -> {
+        Variorum.get().getServer().getAsyncScheduler().runNow(Variorum.get(), task -> {
+          addPlayer(player);
+        });
+      });
     }
 
-    private void removePlayer(Player player) {
-        if (sidebar != null) {
-            sidebar.removePlayer(player);
-        }
+    @EventHandler
+    public void onGameStateChange(GameStateChangeEvent event) {
+      updateLayout();
     }
 
-    private void updateLayout() {
-        TeamsModule teamsModule = match.getRequiredModule(TeamsModule.class);
-        ObjectivesModule objectivesModule = match.getRequiredModule(ObjectivesModule.class);
-
-        var contentBuilder = SidebarComponent.builder();
-
-        for (Team team : teamsModule.getTeams()) {
-            contentBuilder.addDynamicLine(() -> Component.text()
-                    .append(Component.text(team.name()))
-                    .color(team.textColor())
-                    .build());
-
-            List<MonumentObjective> monumentObjectives = objectivesModule.getObjectives().stream()
-                    .filter(obj -> obj instanceof MonumentObjective)
-                    .map(obj -> (MonumentObjective) obj)
-                    .filter(mon -> mon.getOwner().equals(team))
-                    .toList();
-
-            if (!monumentObjectives.isEmpty()) {
-                monumentObjectives.forEach(monument -> {
-                    contentBuilder.addDynamicLine(() -> {
-                        Component status = monument.isCompleted()
-                                ? Component.text("✓", NamedTextColor.GREEN).decorate(TextDecoration.BOLD)
-                                : Component.text("✗", NamedTextColor.RED).decorate(TextDecoration.BOLD);
-
-                        return Component.text()
-                                .append(Component.text("  " + monument.getName() + " - ", NamedTextColor.WHITE))
-                                .append(status)
-                                .build();
-                    });
-                });
-            }
-
-            List<WoolObjective> woolObjectives = objectivesModule.getObjectives().stream()
-                    .filter(obj -> obj instanceof WoolObjective)
-                    .map(obj -> (WoolObjective) obj)
-                    .filter(wool ->
-                            wool.getTeam().isPresent() && wool.getTeam().get().equals(team))
-                    .toList();
-
-            if (!woolObjectives.isEmpty()) {
-                woolObjectives.forEach(wool -> {
-                    contentBuilder.addDynamicLine(() -> {
-                        Component status = wool.isCompleted()
-                                ? Component.text("✓", NamedTextColor.GREEN).decorate(TextDecoration.BOLD)
-                                : Component.text("✗", NamedTextColor.RED).decorate(TextDecoration.BOLD);
-
-                        return Component.text()
-                                .append(Component.text("  " + wool.getName() + " - ", NamedTextColor.WHITE))
-                                .append(status)
-                                .build();
-                    });
-                });
-            }
-
-            contentBuilder.addBlankLine();
-        }
-
-        contentBuilder.addDynamicLine(() -> Component.text()
-                .append(Component.text("Map: ", NamedTextColor.GOLD))
-                .append(Component.text(match.getMap().getName(), NamedTextColor.WHITE)
-                        .decorate(TextDecoration.BOLD))
-                .build());
-
-        SidebarComponent content = contentBuilder.build();
-        this.layout = new ComponentSidebarLayout(SidebarComponent.staticLine(Component.text("Objectives")), content);
-        this.layout.apply(sidebar);
+    @EventHandler
+    public void onMonumentDestroyed(MonumentDestroyedEvent event) {
+      updateLayout();
     }
 
-    private class ScoreboardListener implements Listener {
-        @EventHandler
-        public void onPlayerJoin(PlayerJoinEvent event) {
-            addPlayer(event.getPlayer());
-        }
-
-        @EventHandler
-        public void onPlayerQuit(PlayerQuitEvent event) {
-            removePlayer(event.getPlayer());
-        }
-
-        @EventHandler
-        public void onGameStateChange(MatchOpenEvent event) {
-            Bukkit.getOnlinePlayers().forEach(player -> {
-                Variorum.get().getServer().getAsyncScheduler().runNow(Variorum.get(), task -> {
-                    addPlayer(player);
-                });
-            });
-        }
-
-        @EventHandler
-        public void onGameStateChange(GameStateChangeEvent event) {
-            updateLayout();
-        }
-
-        @EventHandler
-        public void onMonumentDestroyed(MonumentDestroyedEvent event) {
-            updateLayout();
-        }
-
-        @EventHandler
-        public void onWoolPlace(WoolPlaceEvent event) {
-            updateLayout();
-        }
+    @EventHandler
+    public void onWoolPlace(WoolPlaceEvent event) {
+      updateLayout();
     }
+  }
 }

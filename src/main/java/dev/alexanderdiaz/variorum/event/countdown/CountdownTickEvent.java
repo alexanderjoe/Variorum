@@ -7,23 +7,23 @@ import org.bukkit.event.Cancellable;
 
 @Getter
 public class CountdownTickEvent extends CountdownEvent implements Cancellable {
-    private final int secondsLeft;
-    private final boolean announced;
-    private boolean cancelled = false;
+  private final int secondsLeft;
+  private final boolean announced;
+  private boolean cancelled = false;
 
-    public CountdownTickEvent(Match match, Countdown countdown, int secondsLeft, boolean announced) {
-        super(match, countdown);
-        this.secondsLeft = secondsLeft;
-        this.announced = announced;
-    }
+  public CountdownTickEvent(Match match, Countdown countdown, int secondsLeft, boolean announced) {
+    super(match, countdown);
+    this.secondsLeft = secondsLeft;
+    this.announced = announced;
+  }
 
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
+  @Override
+  public boolean isCancelled() {
+    return cancelled;
+  }
 
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
-    }
+  @Override
+  public void setCancelled(boolean cancel) {
+    this.cancelled = cancel;
+  }
 }
